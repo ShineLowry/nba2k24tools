@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkbox Filter</title>
-    <style>
-        .hidden {
-            display: none;
-        }
-    </style>
 </head>
 <body>
     <input type="text" id="inputBox" placeholder="Enter something...">
@@ -23,7 +18,7 @@
         <input type="checkbox" name="checkbox6"> Checkbox 6<br>
     </div>
 
-    <div id="div2" class="hidden">
+    <div id="div2">
         <h3>AS400 Section</h3>
         <input type="checkbox" name="checkbox7"> Checkbox 7<br>
         <input type="checkbox" name="checkbox8"> Checkbox 8<br>
@@ -33,7 +28,7 @@
         <input type="checkbox" name="checkbox12"> Checkbox 12<br>
     </div>
 
-    <div id="div3" class="hidden">
+    <div id="div3">
         <h3>Other Section</h3>
         <input type="checkbox" name="checkbox13"> Checkbox 13<br>
         <input type="checkbox" name="checkbox14"> Checkbox 14<br>
@@ -46,7 +41,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#inputBox').on('input', function() {
+            $('#inputBox').on('change', function() {
                 var inputValue = $(this).val().toLowerCase();
                 
                 if (inputValue.startsWith('oracle')) {
