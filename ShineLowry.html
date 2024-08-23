@@ -41,7 +41,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#inputBox').on('change', function() {
+            $('#inputBox').on('input', function() {
                 var inputValue = $(this).val().toLowerCase();
                 
                 if (inputValue.startsWith('oracle')) {
