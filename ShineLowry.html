@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>表格分页示例</title>
     <style>
-        /* 基本样式 */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -19,8 +18,6 @@
         th {
             background-color: #f4f4f4;
         }
-
-        /* 分页按钮样式 */
         .pagination {
             display: flex;
             justify-content: center;
@@ -63,6 +60,100 @@
 </div>
 
 <script>
+    function generateTableWithPagination(table1Data, table2Data, rowsPerPage) {
+        let currentPage = 1;
+        const totalPages = Math.ceil(table1Data.length / rowsPerPage);
+
+        function displayTableData(page) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = ""; // 清空表格内容
+
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData1 = table1Data.slice(start, end);
+            const paginatedData2 = table2Data.slice(start, end);
+
+            for (let i = 0; i < paginatedData1.length; i++) {
+                const row = document.createElement('tr');
+
+                const cell1 = document.createElement('td');
+                const link = document.createElement('a');
+                link.href = `your_page.html?id=${paginatedData1[i].imfr_ud_tableid}`;
+                link.textContent = paginatedData1[i].imfr_ud_tableid;
+                cell1.appendChild(link);
+                row.appendChild(cell1);
+
+                const cell2 = document.createElement('td');
+                if (paginatedData2[i]) {
+                    cell2.textContent = paginatedData2[i].imfr_ud_tableid;
+                } else {
+                    cell2.textContent = 'N/A';
+                }
+                row.appendChild(cell2);
+
+                tbody.appendChild(row);
+            }
+        }
+
+        function setupPagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = ''; // 清空分页内容
+
+            // 如果数据少于等于 rowsPerPage 条，则不显示分页
+            if (table1Data.length <= rowsPerPage) {
+                pagination.style.display = 'none';
+                return;
+            }
+
+            pagination.style.display = 'flex'; // 确保显示分页
+
+            // 添加“前一页”按钮
+            if (currentPage > 1) {
+                const prevBtn = document.createElement('button');
+                prevBtn.textContent = '前一页';
+                prevBtn.addEventListener('click', function () {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        displayTableData(currentPage);
+                        setupPagination();
+                    }
+                });
+                pagination.appendChild(prevBtn);
+            }
+
+            // 添加数字按钮
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.className = i === currentPage ? 'active' : '';
+                btn.addEventListener('click', function () {
+                    currentPage = i;
+                    displayTableData(currentPage);
+                    setupPagination(); // 重新设置分页按钮的状态
+                });
+                pagination.appendChild(btn);
+            }
+
+            // 添加“后一页”按钮
+            if (currentPage < totalPages) {
+                const nextBtn = document.createElement('button');
+                nextBtn.textContent = '后一页';
+                nextBtn.addEventListener('click', function () {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        displayTableData(currentPage);
+                        setupPagination();
+                    }
+                });
+                pagination.appendChild(nextBtn);
+            }
+        }
+
+        // 初始化页面
+        displayTableData(currentPage);
+        setupPagination();
+    }
+
     // 模拟从数据库中提取的数据
     const table1Data = [
         {imfr_ud_tableid: '1121312edsadas', imfr_ud_name: 'Name1'},
@@ -92,98 +183,8 @@
         {imfr_ud_tableid: 'otherData11'}
     ];
 
-    let currentPage = 1;
-    const rowsPerPage = 10;
-    const totalPages = Math.ceil(table1Data.length / rowsPerPage);
-
-    function displayTableData(page) {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = ""; // 清空表格内容
-
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const paginatedData1 = table1Data.slice(start, end);
-        const paginatedData2 = table2Data.slice(start, end);
-
-        for (let i = 0; i < paginatedData1.length; i++) {
-            const row = document.createElement('tr');
-
-            const cell1 = document.createElement('td');
-            const link = document.createElement('a');
-            link.href = `your_page.html?id=${paginatedData1[i].imfr_ud_tableid}`;
-            link.textContent = paginatedData1[i].imfr_ud_tableid;
-            cell1.appendChild(link);
-            row.appendChild(cell1);
-
-            const cell2 = document.createElement('td');
-            if (paginatedData2[i]) {
-                cell2.textContent = paginatedData2[i].imfr_ud_tableid;
-            } else {
-                cell2.textContent = 'N/A';
-            }
-            row.appendChild(cell2);
-
-            tbody.appendChild(row);
-        }
-    }
-
-    function setupPagination() {
-        const pagination = document.getElementById('pagination');
-        pagination.innerHTML = ''; // 清空分页内容
-
-        // 如果数据少于等于 rowsPerPage 条，则不显示分页
-        if (table1Data.length <= rowsPerPage) {
-            pagination.style.display = 'none';
-            return;
-        }
-
-        pagination.style.display = 'flex'; // 确保显示分页
-
-        // 添加“前一页”按钮
-        if (currentPage > 1) {
-            const prevBtn = document.createElement('button');
-            prevBtn.textContent = '前一页';
-            prevBtn.addEventListener('click', function () {
-                if (currentPage > 1) {
-                    currentPage--;
-                    displayTableData(currentPage);
-                    setupPagination();
-                }
-            });
-            pagination.appendChild(prevBtn);
-        }
-
-        // 添加数字按钮
-        for (let i = 1; i <= totalPages; i++) {
-            const btn = document.createElement('button');
-            btn.textContent = i;
-            btn.className = i === currentPage ? 'active' : '';
-            btn.addEventListener('click', function () {
-                currentPage = i;
-                displayTableData(currentPage);
-                setupPagination(); // 重新设置分页按钮的状态
-            });
-            pagination.appendChild(btn);
-        }
-
-        // 添加“后一页”按钮
-        if (currentPage < totalPages) {
-            const nextBtn = document.createElement('button');
-            nextBtn.textContent = '后一页';
-            nextBtn.addEventListener('click', function () {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    displayTableData(currentPage);
-                    setupPagination();
-                }
-            });
-            pagination.appendChild(nextBtn);
-        }
-    }
-
-    // 初始化页面
-    displayTableData(currentPage);
-    setupPagination();
+    // 调用生成表格和分页的函数
+    generateTableWithPagination(table1Data, table2Data, 10);
 </script>
 
 </body>
