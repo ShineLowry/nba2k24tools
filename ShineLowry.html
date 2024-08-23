@@ -30,6 +30,10 @@
             background-color: #f4f4f4;
             cursor: pointer;
         }
+        .pagination button.active {
+            background-color: #007bff;
+            color: white;
+        }
         .pagination button.disabled {
             background-color: #e0e0e0;
             color: #a0a0a0;
@@ -53,6 +57,7 @@
 
     <div id="pagination" class="pagination">
         <button id="prevPage" class="disabled">前一页</button>
+        <div id="pageNumbers"></div>
         <button id="nextPage">后一页</button>
     </div>
 </div>
@@ -93,6 +98,25 @@
             }
         }
 
+        function setupPagination() {
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = ''; // 清空页码
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.className = i === currentPage ? 'active' : '';
+                btn.addEventListener('click', function () {
+                    currentPage = i;
+                    displayTableData(currentPage);
+                    updateButtons();
+                });
+                pageNumbers.appendChild(btn);
+            }
+
+            updateButtons(); // 初始化按钮状态
+        }
+
         function updateButtons() {
             const prevBtn = document.getElementById('prevPage');
             const nextBtn = document.getElementById('nextPage');
@@ -114,9 +138,11 @@
             if (totalPages <= 1) {
                 prevBtn.style.display = 'none';
                 nextBtn.style.display = 'none';
+                document.getElementById('pageNumbers').style.display = 'none';
             } else {
                 prevBtn.style.display = 'inline-block';
                 nextBtn.style.display = 'inline-block';
+                document.getElementById('pageNumbers').style.display = 'inline-block';
             }
         }
 
@@ -125,7 +151,7 @@
             if (currentPage > 1) {
                 currentPage--;
                 displayTableData(currentPage);
-                updateButtons();
+                setupPagination();
             }
         });
 
@@ -133,13 +159,13 @@
             if (currentPage < totalPages) {
                 currentPage++;
                 displayTableData(currentPage);
-                updateButtons();
+                setupPagination();
             }
         });
 
         // 初始化页面
         displayTableData(currentPage);
-        updateButtons();
+        setupPagination();
     }
 
     // 模拟从数据库中提取的数据
