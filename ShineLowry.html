@@ -30,10 +30,6 @@
             background-color: #f4f4f4;
             cursor: pointer;
         }
-        .pagination button.active {
-            background-color: #007bff;
-            color: white;
-        }
         .pagination button.disabled {
             background-color: #e0e0e0;
             color: #a0a0a0;
@@ -56,6 +52,8 @@
     </table>
 
     <div id="pagination" class="pagination">
+        <button id="prevPage" class="disabled">前一页</button>
+        <button id="nextPage">后一页</button>
     </div>
 </div>
 
@@ -95,63 +93,53 @@
             }
         }
 
-        function setupPagination() {
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = ''; // 清空分页内容
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
 
-            // 如果数据少于等于 rowsPerPage 条，则不显示分页
-            if (table1Data.length <= rowsPerPage) {
-                pagination.style.display = 'none';
-                return;
+            // 更新按钮状态
+            if (currentPage === 1) {
+                prevBtn.classList.add('disabled');
+            } else {
+                prevBtn.classList.remove('disabled');
             }
 
-            pagination.style.display = 'flex'; // 确保显示分页
-
-            // 添加“前一页”按钮
-            if (currentPage > 1) {
-                const prevBtn = document.createElement('button');
-                prevBtn.textContent = '前一页';
-                prevBtn.addEventListener('click', function () {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        displayTableData(currentPage);
-                        setupPagination();
-                    }
-                });
-                pagination.appendChild(prevBtn);
+            if (currentPage === totalPages) {
+                nextBtn.classList.add('disabled');
+            } else {
+                nextBtn.classList.remove('disabled');
             }
 
-            // 添加数字按钮
-            for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.textContent = i;
-                btn.className = i === currentPage ? 'active' : '';
-                btn.addEventListener('click', function () {
-                    currentPage = i;
-                    displayTableData(currentPage);
-                    setupPagination(); // 重新设置分页按钮的状态
-                });
-                pagination.appendChild(btn);
-            }
-
-            // 添加“后一页”按钮
-            if (currentPage < totalPages) {
-                const nextBtn = document.createElement('button');
-                nextBtn.textContent = '后一页';
-                nextBtn.addEventListener('click', function () {
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        displayTableData(currentPage);
-                        setupPagination();
-                    }
-                });
-                pagination.appendChild(nextBtn);
+            // 如果总页数为1，不显示分页按钮
+            if (totalPages <= 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'inline-block';
             }
         }
 
+        // 按钮点击事件
+        document.getElementById('prevPage').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayTableData(currentPage);
+                updateButtons();
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayTableData(currentPage);
+                updateButtons();
+            }
+        });
+
         // 初始化页面
         displayTableData(currentPage);
-        setupPagination();
+        updateButtons();
     }
 
     // 模拟从数据库中提取的数据
