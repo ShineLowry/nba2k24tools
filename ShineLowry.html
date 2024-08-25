@@ -237,3 +237,195 @@
 
 </body>
 </html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表格分页示例</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f4f4f4;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .pagination button.disabled {
+            background-color: #e0e0e0;
+            color: #a0a0a0;
+            cursor: not-allowed;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 300px;
+            margin-right: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div class="search-container">
+    <label for="searchInput">输入表1的imfr_ud_tableid：</label>
+    <input type="text" id="searchInput" placeholder="输入关键词并离开输入框...">
+</div>
+
+<div>
+    <table id="addTableDataList">
+        <thead>
+            <tr>
+                <th>Table 1 Data (imfr_ud_tableid)</th>
+                <th>Table 2 Data (imfr_ud_tableid)</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+
+    <div id="pagination" class="pagination">
+        <button id="prevPage" class="disabled">前一页</button>
+        <div id="pageNumbers"></div>
+        <button id="nextPage">后一页</button>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    const table1Data = [
+        {imfr_ud_tableid: '1121312edsadas', imfr_ud_name: 'Name1'},
+        {imfr_ud_tableid: 'jjjj', imfr_ud_name: 'Name2'},
+        {imfr_ud_tableid: 'gge', imfr_ud_name: 'Name3'},
+        {imfr_ud_tableid: 'm10420ccc', imfr_ud_name: 'Name4'},
+        {imfr_ud_tableid: 'ooooo', imfr_ud_name: 'Name5'},
+        {imfr_ud_tableid: 'sssss', imfr_ud_name: 'Name6'},
+        {imfr_ud_tableid: '20240822', imfr_ud_name: 'Name7'},
+        {imfr_ud_tableid: '666666', imfr_ud_name: 'Name8'},
+        {imfr_ud_tableid: '0000000000', imfr_ud_name: 'Name9'},
+        {imfr_ud_tableid: '1111111111', imfr_ud_name: 'Name10'},
+        {imfr_ud_tableid: 'ExtraData1', imfr_ud_name: 'Name11'}
+    ];
+
+    const table2Data = [
+        {imfr_ud_tableid: 'otherData1'},
+        {imfr_ud_tableid: 'otherData2'},
+        {imfr_ud_tableid: 'otherData3'},
+        {imfr_ud_tableid: 'otherData4'},
+        {imfr_ud_tableid: 'otherData5'},
+        {imfr_ud_tableid: 'otherData6'},
+        {imfr_ud_tableid: 'otherData7'},
+        {imfr_ud_tableid: 'otherData8'},
+        {imfr_ud_tableid: 'otherData9'},
+        {imfr_ud_tableid: 'otherData10'},
+        {imfr_ud_tableid: 'otherData11'}
+    ];
+
+    const rowsPerPage = 10;
+    let currentPage = 1;
+
+    function generateTable(data1, data2, page) {
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const paginatedData1 = data1.slice(start, end);
+        const paginatedData2 = data2.slice(start, end);
+
+        $('#tableBody').empty();
+
+        paginatedData1.forEach(function(item, index) {
+            const row = $('<tr></tr>');
+            const link = $('<a></a>').attr('href', `your_page.html?id=${item.imfr_ud_tableid}`).text(item.imfr_ud_tableid);
+            const cell1 = $('<td></td>').append(link);
+            const cell2 = $('<td></td>').text(paginatedData2[index] ? paginatedData2[index].imfr_ud_tableid : 'N/A');
+
+            row.append(cell1, cell2);
+            $('#tableBody').append(row);
+        });
+    }
+
+    function updatePagination(totalPages) {
+        $('#pageNumbers').empty();
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = $('<button></button>')
+                .text(i)
+                .addClass(i === currentPage ? 'active' : '')
+                .click(function() {
+                    currentPage = i;
+                    generateTable(filteredData, table2Data, currentPage);
+                    updatePagination(totalPages);
+                });
+            $('#pageNumbers').append(btn);
+        }
+
+        $('#prevPage').toggleClass('disabled', currentPage === 1);
+        $('#nextPage').toggleClass('disabled', currentPage === totalPages);
+        $('#pagination').toggle(totalPages > 1);
+    }
+
+    $('#prevPage').click(function() {
+        if (currentPage > 1) {
+            currentPage--;
+            generateTable(filteredData, table2Data, currentPage);
+            updatePagination(Math.ceil(filteredData.length / rowsPerPage));
+        }
+    });
+
+    $('#nextPage').click(function() {
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            generateTable(filteredData, table2Data, currentPage);
+            updatePagination(totalPages);
+        }
+    });
+
+    let filteredData = table1Data;
+
+    $('#searchInput').focusout(function() {
+        const searchTerm = $(this).val().trim().toLowerCase();
+        if (searchTerm) {
+            filteredData = table1Data.filter(item => item.imfr_ud_tableid.toLowerCase().includes(searchTerm));
+        } else {
+            filteredData = table1Data;
+        }
+
+        currentPage = 1;
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        generateTable(filteredData, table2Data, currentPage);
+        updatePagination(totalPages);
+    });
+
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+    generateTable(filteredData, table2Data, currentPage);
+    updatePagination(totalPages);
+});
+</script>
+
+</body>
+</html>
