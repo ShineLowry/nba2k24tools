@@ -3,62 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkbox Filter</title>
+    <title>表格分页示例</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f4f4f4;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .pagination button.disabled {
+            background-color: #e0e0e0;
+            color: #a0a0a0;
+            cursor: not-allowed;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 300px;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-    <input type="text" id="inputBox" placeholder="Enter something...">
 
-    <div id="div1">
-        <h3>Oracle Section</h3>
-        <input type="checkbox" name="checkbox1"> Checkbox 1<br>
-        <input type="checkbox" name="checkbox2"> Checkbox 2<br>
-        <input type="checkbox" name="checkbox3"> Checkbox 3<br>
-        <input type="checkbox" name="checkbox4"> Checkbox 4<br>
-        <input type="checkbox" name="checkbox5"> Checkbox 5<br>
-        <input type="checkbox" name="checkbox6"> Checkbox 6<br>
+<div class="search-container">
+    <label for="searchInput">输入表1的imfr_ud_tableid：</label>
+    <input type="text" id="searchInput" placeholder="输入关键词并离开输入框...">
+</div>
+
+<div>
+    <table id="addTableDataList">
+        <thead>
+            <tr>
+                <th>Table 1 Data (imfr_ud_tableid)</th>
+                <th>Table 2 Data (imfr_ud_tableid)</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+
+    <div id="pagination" class="pagination">
+        <button id="prevPage" class="disabled">前一页</button>
+        <div id="pageNumbers"></div>
+        <button id="nextPage">后一页</button>
     </div>
+</div>
 
-    <div id="div2">
-        <h3>AS400 Section</h3>
-        <input type="checkbox" name="checkbox7"> Checkbox 7<br>
-        <input type="checkbox" name="checkbox8"> Checkbox 8<br>
-        <input type="checkbox" name="checkbox9"> Checkbox 9<br>
-        <input type="checkbox" name="checkbox10"> Checkbox 10<br>
-        <input type="checkbox" name="checkbox11"> Checkbox 11<br>
-        <input type="checkbox" name="checkbox12"> Checkbox 12<br>
-    </div>
+<script>
+    function generateTableWithPagination(filteredData, table2Data, rowsPerPage) {
+        let currentPage = 1;
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
-    <div id="div3">
-        <h3>Other Section</h3>
-        <input type="checkbox" name="checkbox13"> Checkbox 13<br>
-        <input type="checkbox" name="checkbox14"> Checkbox 14<br>
-        <input type="checkbox" name="checkbox15"> Checkbox 15<br>
-        <input type="checkbox" name="checkbox16"> Checkbox 16<br>
-        <input type="checkbox" name="checkbox17"> Checkbox 17<br>
-        <input type="checkbox" name="checkbox18"> Checkbox 18<br>
-    </div>
+        function displayTableData(page) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = ""; // 清空表格内容
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#inputBox').on('input', function() {
-                var inputValue = $(this).val().toLowerCase();
-                
-                if (inputValue.startsWith('oracle')) {
-                    $('#div1').show();
-                    $('#div2').hide();
-                    $('#div3').hide();
-                } else if (inputValue.startsWith('as400')) {
-                    $('#div1').hide();
-                    $('#div2').show();
-                    $('#div3').hide();
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData1 = filteredData.slice(start, end);
+            const paginatedData2 = table2Data.slice(start, end);
+
+            for (let i = 0; i < paginatedData1.length; i++) {
+                const row = document.createElement('tr');
+
+                const cell1 = document.createElement('td');
+                const link = document.createElement('a');
+                link.href = `your_page.html?id=${paginatedData1[i].imfr_ud_tableid}`;
+                link.textContent = paginatedData1[i].imfr_ud_tableid;
+                cell1.appendChild(link);
+                row.appendChild(cell1);
+
+                const cell2 = document.createElement('td');
+                if (paginatedData2[i]) {
+                    cell2.textContent = paginatedData2[i].imfr_ud_tableid;
                 } else {
-                    $('#div1').hide();
-                    $('#div2').hide();
-                    $('#div3').show();
+                    cell2.textContent = 'N/A';
                 }
-            });
+                row.appendChild(cell2);
+
+                tbody.appendChild(row);
+            }
+        }
+
+        function setupPagination() {
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = ''; // 清空页码
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.className = i === currentPage ? 'active' : '';
+                btn.addEventListener('click', function () {
+                    currentPage = i;
+                    displayTableData(currentPage);
+                    updateButtons();
+                });
+                pageNumbers.appendChild(btn);
+            }
+
+            updateButtons(); // 初始化按钮状态
+        }
+
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+
+            // 更新按钮状态
+            if (currentPage === 1) {
+                prevBtn.classList.add('disabled');
+            } else {
+                prevBtn.classList.remove('disabled');
+            }
+
+            if (currentPage === totalPages) {
+                nextBtn.classList.add('disabled');
+            } else {
+                nextBtn.classList.remove('disabled');
+            }
+
+            // 如果总页数为1，不显示分页按钮
+            if (totalPages <= 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                document.getElementById('pageNumbers').style.display = 'none';
+            } else {
+                prevBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'inline-block';
+                document.getElementById('pageNumbers').style.display = 'inline-block';
+            }
+        }
+
+        // 按钮点击事件
+        document.getElementById('prevPage').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayTableData(currentPage);
+                setupPagination();
+            }
         });
-    </script>
+
+        document.getElementById('nextPage').addEventListener('click', function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayTableData(currentPage);
+                setupPagination();
+            }
+        });
+
+        // 初始化页面
+        displayTableData(currentPage);
+        setupPagination();
+    }
+
+    // 模拟从数据库中提取的数据
+    const table1Data = [
+        {imfr_ud_tableid: '1121312edsadas', imfr_ud_name: 'Name1'},
+        {imfr_ud_tableid: 'jjjj', imfr_ud_name: 'Name2'},
+        {imfr_ud_tableid: 'gge', imfr_ud_name: 'Name3'},
+        {imfr_ud_tableid: 'm10420ccc', imfr_ud_name: 'Name4'},
+        {imfr_ud_tableid: 'ooooo', imfr_ud_name: 'Name5'},
+        {imfr_ud_tableid: 'sssss', imfr_ud_name: 'Name6'},
+        {imfr_ud_tableid: '20240822', imfr_ud_name: 'Name7'},
+        {imfr_ud_tableid: '666666', imfr_ud_name: 'Name8'},
+        {imfr_ud_tableid: '0000000000', imfr_ud_name: 'Name9'},
+        {imfr_ud_tableid: '1111111111', imfr_ud_name: 'Name10'},
+        {imfr_ud_tableid: 'ExtraData1', imfr_ud_name: 'Name11'}
+    ];
+
+    const table2Data = [
+        {imfr_ud_tableid: 'otherData1'},
+        {imfr_ud_tableid: 'otherData2'},
+        {imfr_ud_tableid: 'otherData3'},
+        {imfr_ud_tableid: 'otherData4'},
+        {imfr_ud_tableid: 'otherData5'},
+        {imfr_ud_tableid: 'otherData6'},
+        {imfr_ud_tableid: 'otherData7'},
+        {imfr_ud_tableid: 'otherData8'},
+        {imfr_ud_tableid: 'otherData9'},
+        {imfr_ud_tableid: 'otherData10'},
+        {imfr_ud_tableid: 'otherData11'}
+    ];
+
+    // focusout 事件处理程序
+    document.getElementById('searchInput').addEventListener('focusout', function() {
+        const searchTerm = this.value.trim().toLowerCase();
+
+        if (searchTerm) {
+            // 根据用户输入的内容进行查找
+            const filteredData = table1Data.filter(item => item.imfr_ud_tableid.toLowerCase().includes(searchTerm));
+
+            // 如果找到匹配的数据，更新表格内容
+            if (filteredData.length > 0) {
+                generateTableWithPagination(filteredData, table2Data, 10);
+            } else {
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="2">未找到匹配的数据</td></tr>';
+                document.getElementById('pagination').style.display = 'none';
+            }
+        } else {
+            // 如果输入为空，恢复初始数据
+            generateTableWithPagination(table1Data, table2Data, 10);
+        }
+    });
+
+    // 初始显示全部数据
+    generateTableWithPagination(table1Data, table2Data, 10);
+</script>
+
 </body>
 </html>
