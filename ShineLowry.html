@@ -429,3 +429,7 @@ $(document).ready(function() {
 
 </body>
 </html>
+SELECT t2.IMFR_UD_PROGRAMID, t2.IMFR_UD_PROGRAMNAME
+FROM table1 t1
+JOIN table2 t2 ON t1.IMFR_UD_PROGRAMID = t2.IMFR_UD_PROGRAMID
+WHERE t1.IMFR_UD_TABLEID = '用户输入的IMFR_UD_TABLEID';
