@@ -6,3 +6,86 @@ SELECT TRIM(BOTH ',' FROM
            CASE WHEN field5 IS NOT NULL THEN field5 || ',' ELSE '' END
        ) AS combined_fields
 FROM my_table;
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Scrollbar</title>
+  <style>
+    /* 父容器样式 */
+    .scrollable {
+      width: 300px;
+      height: 200px;
+      overflow: auto; /* 启用滚动条 */
+      border: 1px solid #ccc;
+    }
+
+    /* 自定义滚动条样式 */
+    /* 整体滚动条 */
+    ::-webkit-scrollbar {
+      width: 16px; /* 垂直滚动条宽度 */
+      height: 16px; /* 水平滚动条高度 */
+    }
+
+    /* 滚动条滑块 */
+    ::-webkit-scrollbar-thumb {
+      background: #b0b0b0; /* 滑块颜色 */
+      border-radius: 8px; /* 滑块圆角 */
+    }
+
+    /* 滑块悬停效果 */
+    ::-webkit-scrollbar-thumb:hover {
+      background: #909090; /* 滑块悬停时颜色 */
+    }
+
+    /* 滚动条轨道 */
+    ::-webkit-scrollbar-track {
+      background: #f0f0f0; /* 滑道颜色 */
+    }
+
+    /* 上下箭头按钮样式 */
+    ::-webkit-scrollbar-button {
+      background: #e0e0e0; /* 按钮背景色 */
+      border: none; /* 去掉边框 */
+    }
+
+    /* 上箭头按钮 */
+    ::-webkit-scrollbar-button:single-button:decrement {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray"><polygon points="8,4 4,10 12,10"/></svg>') no-repeat center;
+      background-size: 8px 8px;
+    }
+
+    /* 下箭头按钮 */
+    ::-webkit-scrollbar-button:single-button:increment {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray"><polygon points="4,6 12,6 8,12"/></svg>') no-repeat center;
+      background-size: 8px 8px;
+    }
+
+    /* 禁用的按钮（滚动到最顶部/底部时） */
+    ::-webkit-scrollbar-button:disabled {
+      background: #f0f0f0; /* 禁用按钮的背景色 */
+    }
+
+    /* 水平方向左右箭头按钮样式（可选） */
+    ::-webkit-scrollbar-button:horizontal:decrement {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray"><polygon points="6,4 10,8 6,12"/></svg>') no-repeat center;
+      background-size: 8px 8px;
+    }
+
+    ::-webkit-scrollbar-button:horizontal:increment {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray"><polygon points="10,4 6,8 10,12"/></svg>') no-repeat center;
+      background-size: 8px 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="scrollable">
+    <!-- 模拟内容以触发滚动条 -->
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ultricies dui quis sapien pulvinar, non aliquet felis laoreet. Curabitur a velit quis ex dictum sagittis. Praesent nec mauris a dui luctus volutpat. Etiam eget accumsan urna, nec fermentum nulla. Nam sit amet nulla in justo viverra dignissim. Pellentesque gravida tortor vitae justo blandit, et fermentum lacus bibendum. Nam dapibus a eros nec aliquam. Cras vehicula nunc nec nunc luctus, nec dapibus nulla tempor.</p>
+    <p>Fusce sit amet massa arcu. Integer in sodales eros. Nam vel nibh vehicula, dignissim felis nec, dapibus erat. Morbi varius tellus eu lectus efficitur, eget sollicitudin magna tristique. Donec pellentesque fringilla turpis ut consectetur. Suspendisse scelerisque posuere ipsum a eleifend. Suspendisse potenti. Curabitur ultricies libero orci, id feugiat sapien rutrum a.</p>
+    <p>Aenean malesuada orci quis sapien eleifend, vitae tempor purus euismod. Nullam sed metus et mauris posuere pretium. Suspendisse potenti. Sed varius vestibulum lectus, eget fringilla neque. Suspendisse id purus non ligula congue pharetra. Maecenas vehicula felis et est dictum auctor. Proin maximus fringilla urna, et molestie ligula malesuada sed. Suspendisse tincidunt lorem vitae metus feugiat, quis feugiat purus fringilla.</p>
+  </div>
+</body>
+</html>
