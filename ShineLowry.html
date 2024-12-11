@@ -1,3 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horizontal Scrollbar</title>
+  <style>
+    /* 横向滚动条的父容器样式 */
+    .horizontal-scrollbar {
+      width: 300px;   /* 宽度限制 */
+      height: 150px;  /* 高度限制 */
+      overflow-x: auto; /* 启用横向滚动条 */
+      overflow-y: hidden; /* 禁用垂直滚动条 */
+      white-space: nowrap; /* 防止内容换行，强制横向滚动 */
+      border: 1px solid #ccc; /* 边框 */
+    }
+
+    /* 自定义横向滚动条样式 */
+    .horizontal-scrollbar::-webkit-scrollbar {
+      height: 16px; /* 横向滚动条高度 */
+    }
+
+    /* 滑块样式 */
+    .horizontal-scrollbar::-webkit-scrollbar-thumb {
+      background: #b0b0b0; /* 滑块颜色 */
+      border-radius: 8px; /* 滑块圆角 */
+    }
+
+    /* 滑块悬停效果 */
+    .horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #909090; /* 滑块悬停时的颜色 */
+    }
+
+    /* 滚动条轨道样式 */
+    .horizontal-scrollbar::-webkit-scrollbar-track {
+      background: #f0f0f0; /* 滑道颜色 */
+    }
+
+    /* 左箭头按钮 */
+    .horizontal-scrollbar::-webkit-scrollbar-button:single-button:decrement {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray"><polygon points="6,4 10,8 6,12"/></svg>') no-repeat center;
+      background-size: 8px 8px;
+    }
+
+    /* 右箭头按钮 */
+    .horizontal-scrollbar::-webkit-scrollbar-button:single-button:increment {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray"><polygon points="10,4 6,8 10,12"/></svg>') no-repeat center;
+      background-size: 8px 8px;
+    }
+
+    /* 禁用按钮（滚动到最左或最右时） */
+    .horizontal-scrollbar::-webkit-scrollbar-button:disabled {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>普通内容</h1>
+  <p>以下是一个带有自定义横向滚动条的容器：</p>
+
+  <!-- 横向滚动条的容器 -->
+  <div class="horizontal-scrollbar">
+    <div style="display: inline-block; width: 800px; height: 100%; background: linear-gradient(to right, #ff9a9e, #fad0c4);">
+      这是一个宽内容区域，模拟横向滚动条的效果。向右滚动以查看更多内容。
+    </div>
+  </div>
+</body>
+</html>
 SELECT TRIM(BOTH ',' FROM 
            CASE WHEN field1 IS NOT NULL THEN field1 || ',' ELSE '' END ||
            CASE WHEN field2 IS NOT NULL THEN field2 || ',' ELSE '' END ||
