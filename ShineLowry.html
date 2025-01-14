@@ -157,4 +157,147 @@ FROM my_table;
     <p>Aenean malesuada orci quis sapien eleifend, vitae tempor purus euismod. Nullam sed metus et mauris posuere pretium. Suspendisse potenti. Sed varius vestibulum lectus, eget fringilla neque. Suspendisse id purus non ligula congue pharetra. Maecenas vehicula felis et est dictum auctor. Proin maximus fringilla urna, et molestie ligula malesuada sed. Suspendisse tincidunt lorem vitae metus feugiat, quis feugiat purus fringilla.</p>
   </div>
 </body>
+</以下是用 HTML、jQuery 和 Oracle 实现的解决方案：
+
+1. HTML 代码
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval Table</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+    <div>
+        <label>
+            <input type="checkbox" id="approvalCheckbox" checked> 查询未审批(U)
+        </label>
+        <button id="searchButton">Search</button>
+    </div>
+
+    <table border="1" id="approvalTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Approval</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 查询结果会动态插入到这里 -->
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function () {
+            function fetchData(approvalFilter) {
+                $.ajax({
+                    url: '/fetchApprovalData',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ approval: approvalFilter }),
+                    success: function (response) {
+                        const tableBody = $("#approvalTable tbody");
+                        tableBody.empty(); // 清空表格
+                        response.forEach(row => {
+                            tableBody.append(`
+                                <tr>
+                                    <td>${row.ID}</td>
+                                    <td>${row.Name}</td>
+                                    <td>${row.Approval}</td>
+                                </tr>
+                            `);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching data:", error);
+                    }
+                });
+            }
+
+            // 默认查询 U
+            fetchData(['U']);
+
+            // 点击搜索按钮事件
+            $("#searchButton").on("click", function () {
+                const isChecked = $("#approvalCheckbox").is(":checked");
+                const approvalFilter = isChecked ? ['U'] : ['A', 'D'];
+                fetchData(approvalFilter);
+            });
+        });
+    </script>
+</body>
 </html>
+
+2. Oracle 数据库查询
+
+假设表名为 ApprovalTable，以下是后端使用的 SQL 查询：
+
+-- 查询 Approval 为 U 的数据
+SELECT ID, Name, Approval 
+FROM ApprovalTable
+WHERE Approval = 'U';
+
+-- 查询 Approval 为 A 和 D 的数据
+SELECT ID, Name, Approval 
+FROM ApprovalTable
+WHERE Approval IN ('A', 'D');
+
+3. 后端实现示例 (Node.js 为例)
+
+const express = require('express');
+const oracledb = require('oracledb');
+const bodyParser = require('body-parser');
+
+const app = express();
+app.use(bodyParser.json());
+
+// Oracle 数据库配置
+const dbConfig = {
+    user: 'your_username',
+    password: 'your_password',
+    connectString: 'your_database_connection_string'
+};
+
+// 路由处理
+app.post('/fetchApprovalData', async (req, res) => {
+    const { approval } = req.body;
+
+    const query = `
+        SELECT ID, Name, Approval 
+        FROM ApprovalTable
+        WHERE Approval IN (:approval)
+    `;
+
+    try {
+        const connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, { approval }, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        await connection.close();
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Database query error:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+// 启动服务器
+app.listen(3000, () => {
+    console.log("Server is running on http://localhost:3000");
+});
+
+功能说明
+	1.	前端逻辑：
+	•	页面加载时默认查询 Approval 为 U 的数据。
+	•	用户可以切换复选框状态并点击搜索按钮来查询 Approval 为 A 和 D 的数据。
+	2.	后端处理：
+	•	接收前端传递的 approval 数组参数。
+	•	根据 IN 条件过滤 Approval 字段的数据。
+	3.	动态更新表格：
+	•	使用 AJAX 请求获取后端数据，并动态插入到表格中。
+	4.	数据库操作：
+	•	查询语句使用绑定变量来防止 SQL 注入。
+
+你可以根据实际需求对代码进行调整，比如配置具体的数据库连接和样式优化。
+
