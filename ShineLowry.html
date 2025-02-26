@@ -1,4 +1,27 @@
+let selectedValue = getSelectedValueFromDatabase(); // 从数据库中取出选中的值
 
+let options = [
+  { value: 1, label: "Option 1", deleted: true },
+  { value: 2, label: "Option 2", deleted: false },
+  { value: 3, label: "Option 3", deleted: false },
+  { value: 4, label: "Option 4", deleted: false },
+  { value: 5, label: "Option 5", deleted: false }
+];
+
+// 渲染下拉框时，手动添加已删除的选项
+options.forEach(option => {
+  if (option.value === selectedValue) {
+    // 如果当前选项已删除，且该值是用户的选择，则将其禁用并选中
+    if (option.deleted) {
+      document.querySelector('select').innerHTML += `<option value="${option.value}" disabled selected>${option.label} (已删除)</option>`;
+    } else {
+      document.querySelector('select').innerHTML += `<option value="${option.value}" selected>${option.label}</option>`;
+    }
+  } else {
+    // 正常的未删除选项
+    document.querySelector('select').innerHTML += `<option value="${option.value}">${option.label}</option>`;
+  }
+});
 <!DOCTYPE html>
 <html lang="en">
 <head>
