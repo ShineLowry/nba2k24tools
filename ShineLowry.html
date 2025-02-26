@@ -1,3 +1,41 @@
+$(document).ready(function() {
+    // 假设这是用户原先选择的值
+    var selectedValue = 1;  // 假设用户选择了 Option 1，但它已被删除
+
+    // 当前的选项列表，其中包含 deleted 属性
+    var options = [
+        { value: 1, label: "Option 1", deleted: true },
+        { value: 2, label: "Option 2", deleted: false },
+        { value: 3, label: "Option 3", deleted: false },
+        { value: 4, label: "Option 4", deleted: false },
+        { value: 5, label: "Option 5", deleted: false }
+    ];
+
+    // 获取下拉框 <select> 元素
+    var $select = $('#programme');
+
+    // 先清空下拉框
+    $select.empty();
+
+    // 遍历 options，处理已删除的选项
+    options.forEach(function(option) {
+        // 如果选项已删除并且是用户选中的选项
+        if (option.deleted && option.value === selectedValue) {
+            // 将已删除的选项插入，并在 label 中显示“已删除”
+            $select.append('<option value="' + option.value + '" selected>' + option.label + ' (已删除)</option>');
+        }
+        // 如果选项没有被删除，正常显示它
+        else if (!option.deleted) {
+            var isSelected = option.value === selectedValue ? 'selected' : '';
+            $select.append('<option value="' + option.value + '" ' + isSelected + '>' + option.label + '</option>');
+        }
+    });
+});
+
+
+
+
+
 let selectedValue = getSelectedValueFromDatabase(); // 从数据库中取出选中的值
 
 let options = [
