@@ -1,3 +1,149 @@
+
+好的，如果你希望通过 SQL 来处理这个需求，我们可以设计一个简单的数据库表，用来存储下拉框的数据（label 和 value），并且用一个 deletedFlag 来标记是否该选项已被删除。
+
+数据表设计：
+	1.	表名：dropdown_options（或你喜欢的名字）
+	2.	字段：
+	•	id（主键，自增）
+	•	value（下拉框选项的值）
+	•	label（下拉框选项的标签）
+	•	deletedFlag（标记是否删除，0表示有效，1表示已删除）
+
+SQL 表设计：
+
+CREATE TABLE dropdown_options (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- 主键，自增
+    value INT NOT NULL,                 -- 下拉框选项的值
+    label VARCHAR(255) NOT NULL,        -- 下拉框选项的标签
+    deletedFlag BOOLEAN DEFAULT 0,      -- 标记是否删除，0 表示有效，1 表示已删除
+    UNIQUE(value)                       -- 保证 value 是唯一的
+);
+
+数据插入示例：
+
+-- 插入一些选项数据
+INSERT INTO dropdown_options (value, label, deletedFlag)
+VALUES
+    (1, 'Option 1', 0),
+    (2, 'Option 2', 0),
+    (3, 'Option 3', 0),
+    (4, 'Option 4', 0),
+    (5, 'Option 5', 0);
+
+-- 标记某些选项为已删除
+UPDATE dropdown_options
+SET deletedFlag = 1
+WHERE value = 1;  -- 假设我们删除了 Option 1
+
+SQL 查询：
+
+现在，我们可以查询下拉框数据，只获取未被删除的选项，或者如果需要包括已删除的选项，也可以做适当的调整。
+	1.	查询所有有效的下拉选项（未删除的）：
+
+SELECT value, label
+FROM dropdown_options
+WHERE deletedFlag = 0;
+
+	2.	查询所有下拉选项（包括已删除的）：
+
+SELECT value, label, deletedFlag
+FROM dropdown_options;
+
+结合你的需求：
+
+假设你希望在表单加载时将下拉框的数据填充到前端，并且如果用户选择的是已删除的选项（例如，value = 1），你希望显示该选项，并标记为“已删除”而不禁用它，可以使用类似以下方式来查询：
+	1.	获取下拉框数据：可以通过查询数据库来获取 value 和 label，并且包括已删除的选项。
+	2.	显示已删除的选项：前端可以根据查询结果来处理显示，并通过 deletedFlag 字段来判断该选项是否已删除。
+
+后端处理：
+
+假设你有一个后端 API，负责从数据库中获取下拉框的数据，返回给前端。比如，如果你使用 PHP、Node.js 或 Java 等后端语言，可以使用上面的 SQL 查询语句来获取数据。
+
+示例：用 PHP 获取数据并返回给前端（简化版）
+
+<?php
+// 假设你已经连接到数据库
+$sql = "SELECT value, label FROM dropdown_options WHERE deletedFlag = 0";
+$result = $conn->query($sql);
+
+$options = [];
+while ($row = $result->fetch_assoc()) {
+    $options[] = $row;
+}
+
+// 输出 JSON 格式的选项数据
+echo json_encode($options);
+?>
+
+示例：用 Node.js 获取数据并返回给前端（简化版）
+
+const express = require('express');
+const app = express();
+const mysql = require('mysql');
+
+// 创建数据库连接
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'your_database'
+});
+
+app.get('/dropdown-options', (req, res) => {
+  const query = 'SELECT value, label FROM dropdown_options WHERE deletedFlag = 0';
+  db.query(query, (err, results) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
+});
+
+前端处理：
+
+在前端，你可以通过 AJAX 或 Fetch 请求获取下拉框数据，并根据返回的 deletedFlag 来决定如何显示已删除的选项。
+
+$(document).ready(function() {
+    // 假设你有一个 API 返回下拉框数据
+    $.ajax({
+        url: '/dropdown-options',  // 根据你的 API 地址调整
+        method: 'GET',
+        success: function(data) {
+            var selectedValue = 1; // 假设用户选择的是 Option 1
+            var $select = $('#programme');
+
+            // 清空下拉框
+            $select.empty();
+
+            data.forEach(function(option) {
+                var label = option.label;
+                if (option.deletedFlag === 1) {
+                    label += ' (已删除)'; // 标记为已删除
+                }
+
+                var isSelected = option.value === selectedValue ? 'selected' : '';
+                $select.append('<option value="' + option.value + '" ' + isSelected + '>' + label + '</option>');
+            });
+        }
+    });
+});
+
+总结：
+	1.	数据库设计：通过创建一个包含 value、label 和 deletedFlag 字段的表，来存储下拉框的数据。
+	2.	SQL 查询：可以根据 deletedFlag 来查询有效的选项，或者包括所有选项。
+	3.	后端处理：后端根据 SQL 查询获取数据，返回给前端。
+	4.	前端处理：前端根据 deletedFlag 来显示选项，并标记已删除的选项。
+
+这样，你就能通过数据库管理下拉框的数据，并动态加载并显示这些数据。
+
+
+
+
 $(document).ready(function() {
     // 假设这是用户原先选择的值
     var selectedValue = 1;  // 假设用户选择了 Option 1，但它已被删除
