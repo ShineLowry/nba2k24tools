@@ -1,3 +1,29 @@
+SELECT value, label
+FROM dropdown_options
+WHERE deletedFlag = 0
+
+UNION
+
+SELECT value, label
+FROM dropdown_options
+WHERE deletedFlag = 1
+AND EXISTS (
+    SELECT 1
+    FROM form_submissions f
+    WHERE f.form_id = :form_id
+    AND f.selected_value = dropdown_options.value
+)
+
+UNION
+
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = :form_id;
+
+
+
+
 明白了！你的需求是：
 	1.	详情页：显示所有之前提交表单中被选中过的选项（即使它们已经被删除），并且可以在下拉框中看到。
 	2.	新建表单：只显示未删除的选项（deletedFlag = 0）。
