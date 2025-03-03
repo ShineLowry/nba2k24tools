@@ -1,3 +1,88 @@
+明白了！你的需求是：
+	1.	详情页：显示所有之前提交表单中被选中过的选项（即使它们已经被删除），并且可以在下拉框中看到。
+	2.	新建表单：只显示未删除的选项（deletedFlag = 0）。
+	3.	不管有多少个选项被删除，都要保证所有被选中的选项都能显示出来。
+
+解决思路：
+	1.	查询所有有效选项（deletedFlag = 0）。
+	2.	查询当前表单的选中值列表，通过关联查询拿到所有被选中过的选项，不论它们是否被删除。
+	3.	合并查询结果（UNION ALL），避免去重，确保所有匹配的选项都能被显示。
+
+假设表结构：
+	•	dropdown_options：存储下拉框选项数据。
+	•	value：选项值
+	•	label：选项名称
+	•	deletedFlag：逻辑删除标识（0：有效，1：已删除）
+	•	form_submissions：存储表单提交数据。
+	•	form_id：表单ID
+	•	selected_value：用户选中的选项值
+
+SQL 查询：
+
+SELECT value, label
+FROM dropdown_options
+WHERE deletedFlag = 0 -- 查询有效的选项
+
+UNION ALL
+
+-- 查询当前表单曾经选中的选项（即使被删除）
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = :form_id
+  AND o.deletedFlag = 1;
+
+解释：
+	1.	第一部分查询：
+查询未删除的选项，适用于新表单。
+	2.	第二部分查询：
+通过 JOIN 关联 form_submissions，找到当前表单选中过的所有选项，并且即使选项已经被删除（deletedFlag = 1），也能显示出来。
+	3.	:form_id：通过传入表单的唯一标识来关联查询。
+	4.	UNION ALL：确保结果不会去重，防止遗漏已删除的选项。
+
+示例数据
+
+dropdown_options 表：
+
+value	label	deletedFlag
+1	Option 1	1
+2	Option 2	1
+3	Option 3	0
+4	Option 4	0
+5	Option 5	0
+
+form_submissions 表：
+
+form_id	selected_value
+123	1
+123	2
+
+查询结果：
+
+假设 form_id = 123，执行查询后的结果为：
+
+value	label
+3	Option 3
+4	Option 4
+5	Option 5
+1	Option 1
+2	Option 2
+
+结果分析：
+	•	新表单下拉框只显示未删除的选项（3, 4, 5）。
+	•	详情页下拉框可以正确显示已删除的选项（1, 2），并且不会遗漏任何之前选中过的选项。
+
+总结：
+
+这个方案通过两次查询结合，保证：
+	•	新建表单 只展示有效选项；
+	•	旧表单详情页 还原用户选择的全部选项，无论是否已删除；
+	•	查询逻辑高效，避免额外处理和去重。
+
+
+
+
+
 -- 查询新表单的有效选项，只显示 deletedFlag = 0 的选项
 SELECT value, label
 FROM dropdown_options
