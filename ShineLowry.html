@@ -1,3 +1,32 @@
+
+
+SELECT value, label
+FROM dropdown_options
+WHERE deletedFlag = 0
+
+UNION
+
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = :form_id
+
+UNION
+
+SELECT value, label
+FROM dropdown_options
+WHERE deletedFlag = 1
+AND EXISTS (
+    SELECT 1
+    FROM form_submissions f
+    WHERE f.form_id = :form_id
+    AND f.selected_value IN (
+        SELECT value
+        FROM dropdown_options
+        WHERE deletedFlag = 1
+    )
+);
+
 SELECT value, label
 FROM dropdown_options
 WHERE deletedFlag = 0
