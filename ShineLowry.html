@@ -1,4 +1,96 @@
+可以使用 Flexbox 布局配合动态 margin 来实现这个效果。以下是解决方案：
 
+```html
+<div class="modal">
+  <!-- 下拉框容器 -->
+  <div class="section">
+    <select id="dropdown">
+      <option value="">请选择</option>
+      <option value="show">显示文本框</option>
+    </select>
+  </div>
+  
+  <!-- 文本框容器（初始隐藏） -->
+  <div class="section" id="textboxSection" style="display: none;">
+    <input type="text">
+  </div>
+  
+  <!-- 按钮容器（始终固定在底部） -->
+  <div class="button-section">
+    <button>OK</button>
+    <button>取消</button>
+  </div>
+</div>
+
+<style>
+.modal {
+  display: flex;
+  flex-direction: column;
+  height: 300px; /* 弹窗固定高度 */
+  width: 300px;
+  border: 1px solid #ccc;
+  padding: 20px;
+}
+
+.section {
+  /* 允许内容区域自动扩展 */
+  flex: 0 0 auto;
+}
+
+.button-section {
+  /* 通过 margin-top: auto 实现自动顶到容器底部 */
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+#textboxSection {
+  margin-top: 10px; /* 保持与下拉框的间距 */
+}
+</style>
+
+<script>
+document.getElementById('dropdown').addEventListener('change', function(e) {
+  const textboxSection = document.getElementById('textboxSection');
+  textboxSection.style.display = e.target.value === 'show' ? 'block' : 'none';
+});
+</script>
+```
+
+**关键点解释：**
+
+1. **Flexbox 布局：**
+   - 将 modal 容器设为 `display: flex` 和 `flex-direction: column`
+   - 设置固定高度（模拟弹窗高度）
+
+2. **按钮固定底部：**
+   - 使用 `margin-top: auto` 将按钮容器推到 flex 容器底部
+   - 这个属性会占用所有可用剩余空间，确保按钮始终在底部
+
+3. **动态显示隐藏：**
+   - 仍然使用 `display: none` 控制文本框容器
+   - 由于按钮容器使用 margin-top: auto，当文本框隐藏时按钮会自动保持在底部
+
+4. **高度控制：**
+   - 需要给 modal 设置固定高度（根据实际情况调整）
+   - 如果希望高度自适应内容，可以改用 `min-height` 配合 `height: auto`
+
+**替代方案：** 如果不需要支持老旧浏览器，也可以使用 CSS Grid 布局：
+
+```css
+.modal {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  height: 300px;
+}
+
+.button-section {
+  align-self: end;
+}
+```
+
+两种方案都能实现按钮始终固定在底部的效果，根据项目需要选择适合的布局方式。
 好的，针对这个SQL查询的需求和解决方案，可以写一个完整的调查文档，包括背景、需求分析、方案设计、实现过程和性能测试等内容。
 
 调查文档
