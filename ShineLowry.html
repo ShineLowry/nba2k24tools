@@ -1,5 +1,43 @@
 SELECT value, label
 FROM dropdown_options
+WHERE start_time <= SYSDATE
+  AND (end_time IS NULL OR end_time > SYSDATE)
+
+UNION
+
+-- 如果表单选中的值未过期，则查询该选项
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = :form_id
+  AND o.start_time <= SYSDATE
+  AND (o.end_time IS NULL OR o.end_time > SYSDATE)
+
+UNION
+
+-- 如果表单选中的值已过期，显示所有选项
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = :form_id
+  AND o.end_time <= SYSDATE
+
+ORDER BY
+    CASE 
+        WHEN value IS NULL OR TRIM(value) = '' THEN 0 
+        ELSE 1 
+    END,
+    value;
+    ********
+
+
+
+
+
+
+
+SELECT value, label
+FROM dropdown_options
 WHERE start_time <= SYSDATE 
   AND (end_time IS NULL OR end_time > SYSDATE)
 
