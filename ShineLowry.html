@@ -1,5 +1,27 @@
 SELECT value, label
 FROM (
+    -- ① 获取所有有效选项（新建表单时使用）
+    SELECT value, label
+    FROM dropdown_options
+    WHERE (end_time IS NULL OR end_time > SYSDATE)  
+    AND start_time <= SYSDATE
+
+    UNION
+
+    -- ② 获取旧表单用户提交过的值（即使已过期）
+    SELECT f.selected_value AS value, 
+           o.label
+    FROM form_submissions f
+    LEFT JOIN dropdown_options o 
+    ON f.selected_value = o.value
+    WHERE f.form_id = :form_id
+)
+ORDER BY CASE WHEN value IS NULL THEN 0 ELSE 1 END, value;
+
+
+
+SELECT value, label
+FROM (
     -- ① 获取所有选项（有效 + 过期）
     SELECT value, label
     FROM dropdown_options
