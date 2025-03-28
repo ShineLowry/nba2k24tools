@@ -1,4 +1,143 @@
 
+📌 插入更多测试数据
+
+以下是更全面的插入语句，包含不同时间范围的选项，以及多个表单的提交记录，以便测试各种场景。
+
+🔹 1. 插入下拉框选项数据
+
+-- 仍然有效的选项（没有 end_time，或 end_time 未来）
+INSERT INTO dropdown_options (value, label, start_time, end_time) 
+VALUES ('3', 'Option 3', TO_DATE('2024-01-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO dropdown_options (value, label, start_time, end_time) 
+VALUES ('4', 'Option 4', TO_DATE('2024-01-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO dropdown_options (value, label, start_time, end_time) 
+VALUES ('5', 'Option 5', TO_DATE('2024-01-01', 'YYYY-MM-DD'), NULL);
+
+-- 已过期的选项（选项 1 和 2 被逻辑删除）
+INSERT INTO dropdown_options (value, label, start_time, end_time) 
+VALUES ('1', 'Option 1', TO_DATE('2024-01-01', 'YYYY-MM-DD'), TO_DATE('2024-03-01', 'YYYY-MM-DD'));
+
+INSERT INTO dropdown_options (value, label, start_time, end_time) 
+VALUES ('2', 'Option 2', TO_DATE('2024-01-01', 'YYYY-MM-DD'), TO_DATE('2024-03-01', 'YYYY-MM-DD'));
+
+-- 未来才生效的选项（暂时不显示）
+INSERT INTO dropdown_options (value, label, start_time, end_time) 
+VALUES ('6', 'Future Option', TO_DATE('2025-01-01', 'YYYY-MM-DD'), NULL);
+
+🔹 2. 插入表单提交记录
+
+-- 表单 123 选过 1 和 2（它们现在已经过期了）
+INSERT INTO form_submissions (form_id, selected_value, submit_time) 
+VALUES ('123', '1', TO_DATE('2024-02-15', 'YYYY-MM-DD'));
+
+INSERT INTO form_submissions (form_id, selected_value, submit_time) 
+VALUES ('123', '2', TO_DATE('2024-02-15', 'YYYY-MM-DD'));
+
+-- 表单 124 选了 3（仍然有效）
+INSERT INTO form_submissions (form_id, selected_value, submit_time) 
+VALUES ('124', '3', TO_DATE('2024-03-10', 'YYYY-MM-DD'));
+
+-- 表单 125 选了 4 和 5（仍然有效）
+INSERT INTO form_submissions (form_id, selected_value, submit_time) 
+VALUES ('125', '4', TO_DATE('2024-03-20', 'YYYY-MM-DD'));
+
+INSERT INTO form_submissions (form_id, selected_value, submit_time) 
+VALUES ('125', '5', TO_DATE('2024-03-20', 'YYYY-MM-DD'));
+
+📌 测试数据说明
+
+选项值	选项名称	生效时间	失效时间	当前状态
+1	Option 1	2024-01-01	2024-03-01	❌ 已过期
+2	Option 2	2024-01-01	2024-03-01	❌ 已过期
+3	Option 3	2024-01-01	NULL	✅ 有效
+4	Option 4	2024-01-01	NULL	✅ 有效
+5	Option 5	2024-01-01	NULL	✅ 有效
+6	Future Option	2025-01-01	NULL	⏳ 未来生效
+
+表单 ID	选中的选项
+123	1, 2
+124	3
+125	4, 5
+
+📌 测试 SQL 运行结果
+
+1️⃣ 查询当前有效选项（新建表单）
+
+SELECT value, label
+FROM dropdown_options
+WHERE (end_time IS NULL OR end_time > SYSDATE)  
+AND start_time <= SYSDATE;
+
+✅ 预期结果（1,2 不显示，6 还未生效）：
+
+VALUE  | LABEL
+-------|---------
+3      | Option 3
+4      | Option 4
+5      | Option 5
+
+2️⃣ 查询旧表单 123（已选 1 和 2，应当回显）
+
+SELECT value, label
+FROM dropdown_options
+WHERE (end_time IS NULL OR end_time > SYSDATE)  
+AND start_time <= SYSDATE
+
+UNION
+
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = '123';
+
+✅ 预期结果（包含 1 和 2）：
+
+VALUE  | LABEL
+-------|---------
+1      | Option 1
+2      | Option 2
+3      | Option 3
+4      | Option 4
+5      | Option 5
+
+3️⃣ 查询旧表单 124（只选了 3，其他无变化）
+
+SELECT value, label
+FROM dropdown_options
+WHERE (end_time IS NULL OR end_time > SYSDATE)  
+AND start_time <= SYSDATE
+
+UNION
+
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = '124';
+
+✅ 预期结果：
+
+VALUE  | LABEL
+-------|---------
+3      | Option 3
+4      | Option 4
+5      | Option 5
+
+📌 总结
+
+✅ 新增表单 只会显示当前有效的选项，自动忽略已失效的选项（基于 end_time）。
+✅ 旧表单回显 时，会确保所有历史选项都能正确显示，即使已失效。
+✅ 性能优化：通过索引 start_time, end_time 提高查询效率。
+✅ 更灵活的删除方式：不再需要 deletedFlag，可以通过 end_time 进行控制。
+
+📌 你可以做的调整
+	•	如果需要手动删除选项，可以让 end_time = SYSDATE 让其立即失效。
+	•	如果需要恢复选项，可以更新 end_time = NULL 让其重新生效。
+
+这个方案更适用于长期维护，你觉得这个设计可行吗？要不要再调整一下？
+
+
 📌 Oracle 下拉框选项表建表语句（基于有效时间段方案）
 
 -- ① 创建下拉框选项表（dropdown_options）
