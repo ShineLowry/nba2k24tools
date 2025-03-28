@@ -1,3 +1,23 @@
+
+SELECT value, label
+FROM (
+    SELECT value, label
+    FROM dropdown_options
+    WHERE (end_time IS NULL OR end_time > SYSDATE)  
+    AND start_time <= SYSDATE
+
+    UNION
+
+    SELECT o.value, o.label
+    FROM dropdown_options o
+    JOIN form_submissions f 
+    ON (o.value = f.selected_value OR (o.value IS NULL AND f.selected_value IS NULL))
+    WHERE f.form_id = '123'
+)
+ORDER BY CASE WHEN value IS NULL THEN 0 ELSE 1 END, value;
+
+
+
 如果 value 允许为空，我们需要调整 数据库设计 和 查询逻辑，以确保空值的处理不会影响数据完整性和查询结果。
 
 📌 调整建表语句
