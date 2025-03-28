@@ -1,5 +1,30 @@
 
+📌 Oracle 下拉框选项表建表语句（基于有效时间段方案）
 
+-- ① 创建下拉框选项表（dropdown_options）
+CREATE TABLE dropdown_options (
+    value       VARCHAR2(50) PRIMARY KEY,  -- 选项值，作为主键
+    label       VARCHAR2(255),             -- 选项名称
+    start_time  DATE DEFAULT SYSDATE NOT NULL,  -- 选项生效时间，默认为当前时间
+    end_time    DATE,                       -- 选项失效时间（NULL 表示永久有效）
+    CONSTRAINT chk_valid_time CHECK (start_time <= end_time OR end_time IS NULL)  -- 确保生效时间 ≤ 失效时间
+);
+
+-- ② 创建表单提交记录表（form_submissions）
+CREATE TABLE form_submissions (
+    form_id         VARCHAR2(50) NOT NULL,  -- 表单ID
+    selected_value  VARCHAR2(50) NOT NULL,  -- 选中的选项值
+    submit_time     DATE DEFAULT SYSDATE,   -- 提交时间
+    PRIMARY KEY (form_id, selected_value),
+    FOREIGN KEY (selected_value) REFERENCES dropdown_options(value)  -- 关联下拉框选项表
+);
+
+📌 索引优化（可选，提升查询性能）
+
+-- 为 start_time 和 end_time 添加索引，提高查询当前有效选项的效率
+CREATE INDEX idx_dropdown_time ON dropdown_options (start_time, end_time);
+
+-- 为 form
 
 确实可以用“有效时间段”的方案来优化！
 这样不仅可以满足旧表单的回显需求，还能避免长期积累的“被删除选项”影响查询性能。
