@@ -5,6 +5,43 @@ WHERE start_time <= SYSDATE
 
 UNION
 
+-- 查询表单中选择的有效选项（用户选择的且没有过期）
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = :form_id
+  AND o.start_time <= SYSDATE
+  AND (o.end_time IS NULL OR o.end_time > SYSDATE)
+
+UNION
+
+-- 如果表单中的选项已过期，则显示所有选项（包括过期的选项）
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = :form_id
+  AND o.end_time <= SYSDATE
+
+ORDER BY 
+    -- 将空的 value 和 label 放在前面
+    CASE 
+        WHEN TRIM(value) = '' OR value IS NULL OR TRIM(label) = '' OR label IS NULL THEN 0
+        ELSE 1
+    END,
+    -- 按 value 排序
+    value;
+
+
+
+
+
+SELECT value, label
+FROM dropdown_options
+WHERE start_time <= SYSDATE
+  AND (end_time IS NULL OR end_time > SYSDATE)
+
+UNION
+
 -- 如果表单选中的值未过期，则查询该选项
 SELECT o.value, o.label
 FROM dropdown_options o
