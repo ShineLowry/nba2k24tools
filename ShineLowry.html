@@ -1,4 +1,167 @@
+如果 value 允许为空，我们需要调整 数据库设计 和 查询逻辑，以确保空值的处理不会影响数据完整性和查询结果。
 
+📌 调整建表语句
+
+-- ① 创建下拉框选项表（dropdown_options）
+CREATE TABLE dropdown_options (
+    value       VARCHAR2(50),              -- 选项值，可以为空
+    label       VARCHAR2(255),             -- 选项名称
+    start_time  DATE DEFAULT SYSDATE NOT NULL,  -- 选项生效时间
+    end_time    DATE,                       -- 选项失效时间
+    CONSTRAINT chk_valid_time CHECK (start_time <= end_time OR end_time IS NULL) -- 确保时间合法
+);
+
+-- ② 创建表单提交记录表（form_submissions）
+CREATE TABLE form_submissions (
+    form_id         VARCHAR2(50) NOT NULL,  -- 表单ID
+    selected_value  VARCHAR2(50),           -- 选中的选项值（允许为空）
+    submit_time     DATE DEFAULT SYSDATE,   -- 提交时间
+    PRIMARY KEY (form_id, selected_value)
+);
+
+	✅ 允许 value 为空，不再设置 PRIMARY KEY，确保能存储空值数据
+✅ 关联查询时需要特殊处理 NULL 值
+
+📌 插入测试数据
+
+-- 选项数据（包含 value 为空的情况）
+INSERT INTO dropdown_options (value, label, start_time, end_time) VALUES ('1', 'Option 1', TO_DATE('2024-01-01', 'YYYY-MM-DD'), TO_DATE('2024-06-01', 'YYYY-MM-DD'));
+INSERT INTO dropdown_options (value, label, start_time, end_time) VALUES ('2', 'Option 2', TO_DATE('2024-01-01', 'YYYY-MM-DD'), TO_DATE('2024-06-01', 'YYYY-MM-DD'));
+INSERT INTO dropdown_options (value, label, start_time, end_time) VALUES ('3', 'Option 3', TO_DATE('2024-01-01', 'YYYY-MM-DD'), NULL);
+INSERT INTO dropdown_options (value, label, start_time, end_time) VALUES ('4', 'Option 4', TO_DATE('2024-01-01', 'YYYY-MM-DD'), NULL);
+INSERT INTO dropdown_options (value, label, start_time, end_time) VALUES ('5', 'Option 5', TO_DATE('2024-01-01', 'YYYY-MM-DD'), NULL);
+
+-- 插入一个 value 为空的选项
+INSERT INTO dropdown_options (value, label, start_time, end_time) VALUES (NULL, 'Unknown Option', TO_DATE('2024-01-01', 'YYYY-MM-DD'), NULL);
+
+-- 表单提交数据（有空值）
+INSERT INTO form_submissions (form_id, selected_value, submit_time) VALUES ('123', '1', SYSDATE);
+INSERT INTO form_submissions (form_id, selected_value, submit_time) VALUES ('123', '2', SYSDATE);
+INSERT INTO form_submissions (form_id, selected_value, submit_time) VALUES ('124', NULL, SYSDATE);
+
+📌 查询逻辑调整
+
+🔹 查询当前有效选项（新建表单）
+
+SELECT value, label
+FROM dropdown_options
+WHERE (end_time IS NULL OR end_time > SYSDATE)  
+AND start_time <= SYSDATE
+ORDER BY CASE WHEN value IS NULL THEN 0 ELSE 1 END, value;
+
+	✅ 让 NULL 排在最前面
+✅ 仅返回当前有效的选项
+
+🔹 查询旧表单详情（确保所有提交过的选项都显示，包括已失效和 NULL）
+
+SELECT value, label
+FROM dropdown_options
+WHERE (end_time IS NULL OR end_time > SYSDATE)  
+AND start_time <= SYSDATE
+
+UNION
+
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f 
+ON (o.value = f.selected_value OR (o.value IS NULL AND f.selected_value IS NULL))
+WHERE f.form_id = :form_id
+ORDER BY CASE WHEN value IS NULL THEN 0 ELSE 1 END, value;
+
+	✅ 解决 NULL 选项匹配的问题 (IS NULL 不能用 = 来匹配)
+✅ 确保已失效的选项仍然回显
+✅ 让 NULL 选项排在最前面
+
+📌 测试查询结果
+
+1️⃣ 查询当前有效的下拉选项
+
+SQL
+
+SELECT value, label
+FROM dropdown_options
+WHERE (end_time IS NULL OR end_time > SYSDATE)  
+AND start_time <= SYSDATE
+ORDER BY CASE WHEN value IS NULL THEN 0 ELSE 1 END, value;
+
+预期结果
+
+VALUE  | LABEL
+-------|--------------
+NULL   | Unknown Option
+3      | Option 3
+4      | Option 4
+5      | Option 5
+
+2️⃣ 查询旧表单 123（选过 1、2，即使已失效仍然显示）
+
+SQL
+
+SELECT value, label
+FROM dropdown_options
+WHERE (end_time IS NULL OR end_time > SYSDATE)  
+AND start_time <= SYSDATE
+
+UNION
+
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f 
+ON (o.value = f.selected_value OR (o.value IS NULL AND f.selected_value IS NULL))
+WHERE f.form_id = '123'
+ORDER BY CASE WHEN value IS NULL THEN 0 ELSE 1 END, value;
+
+预期结果
+
+VALUE  | LABEL
+-------|--------------
+NULL   | Unknown Option
+1      | Option 1
+2      | Option 2
+3      | Option 3
+4      | Option 4
+5      | Option 5
+
+3️⃣ 查询旧表单 124（选了 NULL，应当显示 Unknown Option）
+
+SQL
+
+SELECT value, label
+FROM dropdown_options
+WHERE (end_time IS NULL OR end_time > SYSDATE)  
+AND start_time <= SYSDATE
+
+UNION
+
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f 
+ON (o.value = f.selected_value OR (o.value IS NULL AND f.selected_value IS NULL))
+WHERE f.form_id = '124'
+ORDER BY CASE WHEN value IS NULL THEN 0 ELSE 1 END, value;
+
+预期结果
+
+VALUE  | LABEL
+-------|--------------
+NULL   | Unknown Option
+3      | Option 3
+4      | Option 4
+5      | Option 5
+
+📌 方案优化点
+
+✅ 支持 NULL 选项：能够正确存储、查询和匹配 NULL 值。
+✅ 保证历史回显：即使选项已失效或 NULL，仍然能显示在旧表单中。
+✅ 排序优化：让 NULL 选项优先展示，符合 UI 需求。
+
+📌 你觉得这个方案还需要调整吗？
+
+如果有其他需求，比如 允许 NULL 但要求 label 不能为空，也可以加约束：
+
+ALTER TABLE dropdown_options ADD CONSTRAINT chk_label_not_null CHECK (label IS NOT NULL);
+
+可以根据你的具体需求再优化！
 📌 插入更多测试数据
 
 以下是更全面的插入语句，包含不同时间范围的选项，以及多个表单的提交记录，以便测试各种场景。
