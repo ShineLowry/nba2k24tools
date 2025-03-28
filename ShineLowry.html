@@ -1,4 +1,25 @@
 SELECT value, label
+FROM dropdown_options o
+WHERE
+    -- ① 如果选中的值存在且过期，显示所有选项
+    EXISTS (
+        SELECT 1
+        FROM form_submissions f
+        WHERE f.form_id = :form_id
+        AND f.selected_value = o.value
+        AND (o.end_time <= SYSDATE)  -- 如果选项过期
+    )
+    -- ② 如果选中的值有效，则显示当前有效选项
+    OR (
+        o.start_time <= SYSDATE
+        AND (o.end_time IS NULL OR o.end_time > SYSDATE)
+    )
+ORDER BY value;
+
+
+
+
+SELECT value, label
 FROM (
     -- ① 获取所有有效选项（新建表单时使用）
     SELECT value, label
