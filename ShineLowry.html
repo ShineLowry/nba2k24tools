@@ -1,3 +1,22 @@
+SELECT value, label
+FROM (
+    -- ① 获取所有选项（有效 + 过期）
+    SELECT value, label
+    FROM dropdown_options
+    WHERE start_time <= SYSDATE
+
+    -- ② 确保旧表单提交过的值仍然显示（即使被彻底删除）
+    UNION
+    SELECT f.selected_value AS value, 
+           COALESCE(o.label, '已删除') AS label
+    FROM form_submissions f
+    LEFT JOIN dropdown_options o 
+    ON f.selected_value = o.value
+    WHERE f.form_id = '123'
+)
+ORDER BY CASE WHEN value IS NULL THEN 0 ELSE 1 END, value;
+
+
 
 SELECT value, label
 FROM (
