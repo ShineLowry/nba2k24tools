@@ -1,3 +1,133 @@
+下拉框选项管理方案调查报告
+
+一、背景
+
+在业务系统中，下拉框的选项数据存储在数据库中，并可能随着业务需求发生变化（新增、删除或失效）。本次调查的目标是找到合理的方式，确保：
+	1.	新建表单时，下拉框仅显示当前有效的选项；
+	2.	查看旧表单时，仍能看到当时选中的选项，即使该选项已被删除或失效；
+	3.	不同方式的管理对比，找出最优方案。
+
+二、方案对比
+
+方案 A：基于 deletedFlag（逻辑删除）
+
+方案描述
+	•	在 dropdown_options 表中增加 deletedFlag（0 表示有效，1 表示已删除）。
+	•	新建表单时，只查询 deletedFlag = 0 的选项。
+	•	查看旧表单时，如果选项被逻辑删除（deletedFlag = 1），仍能显示该选项。
+
+表结构
+
+CREATE TABLE dropdown_options (
+    value VARCHAR2(50),
+    label VARCHAR2(255),
+    deletedFlag NUMBER(1) DEFAULT 0, -- 0: 正常，1: 逻辑删除
+    PRIMARY KEY (value)
+);
+
+SQL 查询
+
+SELECT value, label
+FROM dropdown_options
+WHERE deletedFlag = 0
+
+UNION
+
+-- 确保旧表单选中的选项仍显示（即使它们已被删除）
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = :form_id
+
+UNION
+
+-- 如果旧表单选中的值被删除，则显示所有选项
+SELECT value, label
+FROM dropdown_options
+WHERE EXISTS (
+    SELECT 1
+    FROM form_submissions f
+    WHERE f.form_id = :form_id
+    AND f.selected_value IN (
+        SELECT value FROM dropdown_options WHERE deletedFlag = 1
+    )
+)
+ORDER BY value;
+
+优缺点
+
+优点	缺点
+✅ 查询逻辑简单，适合静态选项管理	❌ 不能按时间控制选项
+✅ 恢复选项只需 UPDATE deletedFlag = 0	❌ 不能自动过期，必须手动更新
+
+方案 B：基于 start_time / end_time（有效时间段）
+
+方案描述
+	•	增加 start_time（生效时间）和 end_time（失效时间）。
+	•	新建表单时，查询 start_time <= SYSDATE AND (end_time IS NULL OR end_time > SYSDATE) 的选项。
+	•	查看旧表单时，如果选项已过期，仍能显示该选项。
+
+表结构
+
+CREATE TABLE dropdown_options (
+    value VARCHAR2(50),
+    label VARCHAR2(255),
+    start_time DATE DEFAULT SYSDATE,
+    end_time DATE,  -- NULL 表示永久有效
+    PRIMARY KEY (value)
+);
+
+SQL 查询
+
+SELECT value, label
+FROM dropdown_options
+WHERE start_time <= SYSDATE
+  AND (end_time IS NULL OR end_time > SYSDATE)
+
+UNION
+
+-- 确保旧表单选中的选项仍显示（即使已过期）
+SELECT o.value, o.label
+FROM dropdown_options o
+JOIN form_submissions f ON o.value = f.selected_value
+WHERE f.form_id = :form_id
+
+UNION
+
+-- 如果旧表单选中的值已过期，则显示所有选项
+SELECT value, label
+FROM dropdown_options
+WHERE EXISTS (
+    SELECT 1
+    FROM form_submissions f
+    JOIN dropdown_options o ON f.selected_value = o.value
+    WHERE f.form_id = :form_id
+    AND o.end_time <= SYSDATE
+)
+
+ORDER BY value;
+
+优缺点
+
+优点	缺点
+✅ 支持按时间管理，选项可自动过期	❌ 需要 SYSDATE 计算，查询稍复杂
+✅ 历史数据可保留，不会丢失	❌ 选项恢复比 deletedFlag 复杂
+✅ 适用于阶段性或动态选项	❌ 需要定期清理过期数据
+
+三、两种方案的适用场景
+
+方案	适用场景
+逻辑删除（deletedFlag）	适用于手动管理选项，不需要时间控制，如固定的分类、枚举值等。
+有效时间段（start_time / end_time）	适用于阶段性选项，如限时促销、活动报名、产品下架等。
+
+四、结论
+	1.	如果选项需要人工管理（手动删除、恢复），推荐使用**deletedFlag 方案**，查询逻辑简单，恢复方便。
+	2.	如果选项有时间属性，需要自动生效/过期，推荐使用**start_time 和 end_time 方案**，可以避免手动清理过期数据。
+	3.	如果系统同时需要逻辑删除和有效期控制，可以考虑结合两者（但本报告未涉及结合方案）。
+
+最终，根据业务需求选择合适的管理方式，以确保数据的有效性和可维护性。
+
+
 
 调查报告：下拉框选项管理优化
 
