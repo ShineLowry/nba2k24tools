@@ -1,0 +1,65 @@
+好的，如果你不能使用 forEach，可以使用普通的 for 循环来实现相同的功能。以下是使用 for 循环的代码实现：
+使用 for 循环的 JavaScript 实现代码
+const array = [
+  { id: '001', questionno: "Q001", date: "2025-04-08" },
+  { id: '001', questionno: "Q002", date: "2025-04-09" },
+  { id: '001', questionno: "Q002", date: "2025-04-09" },
+  { id: '001', questionno: "Q004", date: "2025-04-11" },
+  { id: '002', questionno: "Q005", date: "2025-04-12" },
+  { id: '002', questionno: "Q006", date: "2025-04-12" },
+  { id: '003', questionno: "Q007", date: "2025-04-14" },
+  { id: '004', questionno: "Q008", date: "2025-04-15" },
+  { id: '005', questionno: "Q009", date: "2025-04-16" },
+  { id: '005', questionno: "Q010", date: "2025-04-16" }
+];
+
+// 聚合函数
+function aggregateArray(arr) {
+  const result = {};
+
+  // 使用 for 循环遍历数组
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    if (!result[item.id]) {
+      result[item.id] = {
+        id: item.id,
+        questionno: [],
+        date: []
+      };
+    }
+    result[item.id].questionno.push(item.questionno);
+    result[item.id].date.push(item.date);
+  }
+
+  // 将数组转换为逗号分隔的字符串
+  const finalResult = [];
+  for (const key in result) {
+    finalResult.push({
+      id: result[key].id,
+      questionno: result[key].questionno.join(','),
+      date: result[key].date.join(',')
+    });
+  }
+
+  return finalResult;
+}
+
+// 调用函数并打印结果
+const aggregatedArray = aggregateArray(array);
+console.log(aggregatedArray);
+
+输出结果
+运行上述代码后，aggregatedArray 将会是如下结构：
+[
+  { id: '001', questionno: "Q001,Q002,Q002,Q004", date: "2025-04-08,2025-04-09,2025-04-09,2025-04-11" },
+  { id: '002', questionno: "Q005,Q006", date: "2025-04-12,2025-04-12" },
+  { id: '003', questionno: "Q007", date: "2025-04-14" },
+  { id: '004', questionno: "Q008", date: "2025-04-15" },
+  { id: '005', questionno: "Q009,Q010", date: "2025-04-16,2025-04-16" }
+]
+
+代码解释
+1.  按 id 分组：使用一个对象 result 来按 id 分组，每个 id 对应一个对象，包含 questionno 和 date 的数组。
+2.  遍历数组：使用 for 循环遍历输入数组，将每个对象的 questionno 和 date 添加到对应 id 的数组中。
+3.  转换为字符串：使用 for...in 循环遍历 result 对象，将每个数组转换为逗号分隔的字符串，并生成最终结果数组。
+这样就可以避免使用 forEach，同时实现相同的功能。如果你还有其他问题，请随时告诉我！
