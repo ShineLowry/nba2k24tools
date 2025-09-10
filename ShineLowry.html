@@ -1,3 +1,37 @@
+根据您的需求，需要关联三张表进行查询。以下是SQL语句（假设表名和字段名准确）：
+
+```sql
+SELECT b.* 
+FROM user u
+INNER JOIN a ON u.user_code = a.ic0010  -- 用user表的code关联a表的ic0010字段
+INNER JOIN b ON a.insertid = b.ic001    -- 用a表的insertid关联b表的ic001字段
+WHERE u.name = '输入的用户名';
+```
+
+或者使用另一种写法：
+
+```sql
+SELECT b.* 
+FROM b
+INNER JOIN a ON b.ic001 = a.insertid
+INNER JOIN user u ON a.ic0010 = u.user_code
+WHERE u.name = '输入的用户名';
+```
+
+注意事项：
+1. 请将`'输入的用户名'`替换为实际的用户输入值
+2. 请确认字段名是否正确：
+   - `user`表中的用户名字段确认为`name`
+   - `user`表中的代码字段确认为`user_code`
+   - `a`表中与user表关联的字段确认为`ic0010`
+   - `a`表中与b表关联的字段确认为`insertid`
+   - `b`表中与a表关联的字段确认为`ic001`
+
+如果字段名或表名有差异，请相应调整SQL语句。
+
+
+
+
 # **"手速不够，快捷键来凑！eBuilder键指如飞秘籍，让你码力全开！"**  
 
 **（副标题：告别鼠标点点点，这些快捷键让你在同事面前秀出残影！）**  
