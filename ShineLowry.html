@@ -1,3 +1,292 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表格选择验证示例</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #4a6bdf;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .table-container {
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .footer {
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login {
+            background: #4a6bdf;
+            color: white;
+        }
+        
+        .btn-login:hover {
+            background: #3a5bce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+            font-weight: 500;
+            padding: 10px;
+            background: #f8d7da;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .success-message {
+            color: #28a745;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+            font-weight: 500;
+            padding: 10px;
+            background: #d4edda;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .checkbox {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+        
+        .selected {
+            background-color: #e8f0fe !important;
+        }
+        
+        @media (max-width: 768px) {
+            th, td {
+                padding: 10px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>用户数据管理</h1>
+        </header>
+        
+        <div class="table-container">
+            <div class="error-message" id="errorMessage">请选择其中一项后再操作</div>
+            <div class="success-message" id="successMessage">登录成功！</div>
+            
+            <table id="tablebadylist">
+                <thead>
+                    <tr>
+                        <th width="50px">
+                            <input type="checkbox" id="selectAll" class="checkbox">
+                        </th>
+                        <th>ID</th>
+                        <th>姓名</th>
+                        <th>邮箱</th>
+                        <th>角色</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox checkbox" name="user"></td>
+                        <td>1001</td>
+                        <td>张三</td>
+                        <td>zhangsan@example.com</td>
+                        <td>管理员</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox checkbox" name="user"></td>
+                        <td>1002</td>
+                        <td>李四</td>
+                        <td>lisi@example.com</td>
+                        <td>编辑</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox checkbox" name="user"></td>
+                        <td>1003</td>
+                        <td>王五</td>
+                        <td>wangwu@example.com</td>
+                        <td>作者</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox checkbox" name="user"></td>
+                        <td>1004</td>
+                        <td>赵六</td>
+                        <td>zhaoliu@example.com</td>
+                        <td>订阅者</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox checkbox" name="user"></td>
+                        <td>1005</td>
+                        <td>钱七</td>
+                        <td>qianqi@example.com</td>
+                        <td>作者</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <button id="loginBtn" class="btn btn-login">登录</button>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 全选/取消全选功能
+            $('#selectAll').click(function() {
+                $('.row-checkbox').prop('checked', this.checked);
+                updateRowSelection();
+            });
+            
+            // 当单个复选框被点击时
+            $('.row-checkbox').click(function() {
+                // 如果所有行都被选中，则选中全选框
+                if ($('.row-checkbox:checked').length === $('.row-checkbox').length) {
+                    $('#selectAll').prop('checked', true);
+                } else {
+                    $('#selectAll').prop('checked', false);
+                }
+                updateRowSelection();
+            });
+            
+            // 更新行选中样式
+            function updateRowSelection() {
+                $('tbody tr').removeClass('selected');
+                $('.row-checkbox:checked').each(function() {
+                    $(this).closest('tr').addClass('selected');
+                });
+            }
+            
+            // 登录按钮点击事件
+            $('#loginBtn').click(function() {
+                // 检查是否有复选框被选中
+                if ($('.row-checkbox:checked').length === 0) {
+                    // 显示错误信息
+                    $('#errorMessage').fadeIn(300);
+                    $('#successMessage').hide();
+                    
+                    // 3秒后隐藏错误信息
+                    setTimeout(function() {
+                        $('#errorMessage').fadeOut(300);
+                    }, 3000);
+                } else {
+                    // 隐藏错误信息，显示成功信息
+                    $('#errorMessage').hide();
+                    $('#successMessage').fadeIn(300);
+                    
+                    // 模拟登录成功
+                    setTimeout(function() {
+                        alert('登录成功！已选择 ' + $('.row-checkbox:checked').length + ' 个用户');
+                    }, 500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 根据您的需求，需要关联三张表进行查询。以下是SQL语句（假设表名和字段名准确）：
 
 ```sql
