@@ -1,3 +1,543 @@
+# 层级联动下拉框初始化检测
+
+我理解了您的需求，您希望在页面初始化时就检测下拉框的状态，并根据已有的选择来设置禁用状态。
+
+下面是完整的实现代码：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>层级联动下拉框初始化检测</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 650px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .description {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .select-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .select-row.active {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        .select-row.disabled {
+            background-color: #f8f9fa;
+        }
+        .select-number {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .select-row.disabled .select-number {
+            background: #95a5a6;
+        }
+        select {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            color: #2c3e50;
+            background-color: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+        select:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        select:disabled {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .status-indicator {
+            margin-left: 15px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .status-enabled {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .status-disabled {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .status-selected {
+            background-color: #3498db;
+            color: white;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button#resetBtn {
+            background-color: #e74c3c;
+        }
+        button#resetBtn:hover {
+            background-color: #c0392b;
+        }
+        .status {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        .status h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .status-content {
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        .highlight {
+            color: #3498db;
+            font-weight: 600;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .rules {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff4e6;
+            border-radius: 6px;
+            border-left: 4px solid #ffa94d;
+        }
+        .rules h3 {
+            color: #d35400;
+            margin-bottom: 10px;
+        }
+        .rules ul {
+            padding-left: 20px;
+            color: #7f8c8d;
+        }
+        .rules li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .example {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #e8f4fc;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        .example h4 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .hierarchy {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .hierarchy h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .hierarchy-visual {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .hierarchy-level {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border-radius: 6px;
+            margin: 0 5px;
+        }
+        .hierarchy-arrow {
+            font-size: 20px;
+            color: #7f8c8d;
+        }
+        .init-status {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f6ef;
+            border-radius: 8px;
+            border-left: 4px solid #2ecc71;
+        }
+        .init-status h3 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>层级联动下拉框初始化检测</h1>
+        <p class="description">页面加载时自动检测下拉框状态并设置相应的禁用状态</p>
+        
+        <div class="hierarchy">
+            <h3>层级关系</h3>
+            <div class="hierarchy-visual">
+                <div class="hierarchy-level">下拉框 1</div>
+                <div class="hierarchy-arrow">→</div>
+                <div class="hierarchy-level">下拉框 2</div>
+                <div class="hierarchy-arrow">→</div>
+                <div class="hierarchy-level">下拉框 3</div>
+                <div class="hierarchy-arrow">→</div>
+                <div class="hierarchy-level">下拉框 4</div>
+            </div>
+        </div>
+        
+        <div class="init-status">
+            <h3>初始化状态</h3>
+            <p>页面加载时已自动检测下拉框状态并设置禁用</p>
+        </div>
+        
+        <div class="form-group">
+            <div class="select-row" id="row1">
+                <div class="select-number">1</div>
+                <select id="select1">
+                    <option value="">请选择...</option>
+                    <option value="option1" selected>选项 1</option>
+                    <option value="option2">选项 2</option>
+                    <option value="option3">选项 3</option>
+                    <option value="option4">选项 4</option>
+                </select>
+                <div class="status-indicator status-enabled">可用</div>
+            </div>
+            
+            <div class="select-row" id="row2">
+                <div class="select-number">2</div>
+                <select id="select2">
+                    <option value="">请选择...</option>
+                    <option value="option1" selected>选项 A</option>
+                    <option value="option2">选项 B</option>
+                    <option value="option3">选项 C</option>
+                    <option value="option4">选项 D</option>
+                </select>
+                <div class="status-indicator status-enabled">可用</div>
+            </div>
+            
+            <div class="select-row" id="row3">
+                <div class="select-number">3</div>
+                <select id="select3">
+                    <option value="">请选择...</option>
+                    <option value="option1">选项 一</option>
+                    <option value="option2">选项 二</option>
+                    <option value="option3">选项 三</option>
+                    <option value="option4">选项 四</option>
+                </select>
+                <div class="status-indicator status-enabled">可用</div>
+            </div>
+            
+            <div class="select-row" id="row4">
+                <div class="select-number">4</div>
+                <select id="select4">
+                    <option value="">请选择...</option>
+                    <option value="option1">选项 Alpha</option>
+                    <option value="option2">选项 Beta</option>
+                    <option value="option3">选项 Gamma</option>
+                    <option value="option4">选项 Delta</option>
+                </select>
+                <div class="status-indicator status-enabled">可用</div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button id="resetBtn">重置所有选择</button>
+            <button id="setValuesBtn">设置示例值</button>
+        </div>
+        
+        <div class="rules">
+            <h3>规则说明</h3>
+            <ul>
+                <li>页面加载时自动检测下拉框状态并设置禁用</li>
+                <li>选择下拉框后，<span class="highlight">之前的所有下拉框</span>将被禁用</li>
+                <li>如果选择空值（"请选择..."），<span class="highlight">只恢复上一级下拉框的可用状态</span></li>
+                <li>使用"重置所有选择"按钮可以完全重置表单</li>
+                <li>使用"设置示例值"按钮可以设置示例值并查看效果</li>
+            </ul>
+            
+            <div class="example">
+                <h4>初始化检测逻辑</h4>
+                <p>页面加载时，代码会：</p>
+                <ul>
+                    <li>检查每个下拉框是否有选中的值</li>
+                    <li>找到最后一个有值的下拉框</li>
+                    <li>禁用该下拉框之前的所有下拉框</li>
+                    <li>启用该下拉框之后的所有下拉框</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="status">
+            <h3>当前状态</h3>
+            <div class="status-content">
+                <p id="statusText">所有下拉框都可用，请开始选择。</p>
+                <p id="selectionText">尚未选择任何选项。</p>
+                <p id="initInfo">初始化检测已完成。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 选择所有下拉框和行
+            const $selects = $('#select1, #select2, #select3, #select4');
+            const $rows = $('#row1, #row2, #row3, #row4');
+            const $statusText = $('#statusText');
+            const $selectionText = $('#selectionText');
+            const $initInfo = $('#initInfo');
+            
+            // 初始化检测函数
+            function initializeSelection() {
+                let lastSelectedIndex = -1;
+                
+                // 检查每个下拉框是否有选中的值
+                $selects.each(function(index) {
+                    if ($(this).val() !== "") {
+                        lastSelectedIndex = index;
+                    }
+                });
+                
+                // 如果有选中的下拉框，设置禁用状态
+                if (lastSelectedIndex >= 0) {
+                    // 禁用之前的所有下拉框
+                    $selects.slice(0, lastSelectedIndex).prop('disabled', true);
+                    $initInfo.text(`初始化检测完成：已禁用下拉框 1 到 ${lastSelectedIndex}`);
+                } else {
+                    $initInfo.text("初始化检测完成：没有预设选择");
+                }
+                
+                updateStatus();
+            }
+            
+            // 初始化检测
+            initializeSelection();
+            
+            // 为每个下拉框添加change事件处理
+            $selects.each(function(index) {
+                $(this).on('change', function() {
+                    const $this = $(this);
+                    const value = $this.val();
+                    const selectIndex = index;
+                    
+                    if (value !== "") {
+                        // 选择有效值：禁用之前的所有下拉框
+                        $selects.slice(0, selectIndex).prop('disabled', true);
+                    } else {
+                        // 选择空值：只恢复上一级下拉框的可用状态
+                        if (selectIndex > 0) {
+                            $selects.eq(selectIndex - 1).prop('disabled', false);
+                        }
+                    }
+                    
+                    updateStatus();
+                    
+                    // 添加动画效果
+                    $this.addClass('fade-in');
+                    setTimeout(() => {
+                        $this.removeClass('fade-in');
+                    }, 500);
+                });
+            });
+            
+            // 重置按钮功能
+            $('#resetBtn').on('click', function() {
+                $selects.prop('disabled', false).val('');
+                updateStatus();
+                $initInfo.text("已重置所有下拉框");
+                
+                // 添加动画效果
+                $(this).addClass('fade-in');
+                setTimeout(() => {
+                    $(this).removeClass('fade-in');
+                }, 500);
+            });
+            
+            // 设置示例值按钮
+            $('#setValuesBtn').on('click', function() {
+                // 设置示例值
+                $('#select1').val('option1');
+                $('#select2').val('option1');
+                $('#select3').val('option2');
+                $('#select4').val('');
+                
+                // 触发初始化检测
+                initializeSelection();
+                $initInfo.text("已设置示例值并执行初始化检测");
+                
+                // 添加动画效果
+                $(this).addClass('fade-in');
+                setTimeout(() => {
+                    $(this).removeClass('fade-in');
+                }, 500);
+            });
+            
+            // 更新状态文本和UI
+            function updateStatus() {
+                let statusMessage = "";
+                let selectionMessage = "当前选择: ";
+                let hasSelection = false;
+                
+                $selects.each(function(index) {
+                    const $this = $(this);
+                    const $row = $rows.eq(index);
+                    const $indicator = $row.find('.status-indicator');
+                    const value = $this.val();
+                    
+                    // 更新行的样式
+                    if (value !== "") {
+                        $row.removeClass('disabled').addClass('active');
+                        $indicator.removeClass('status-enabled status-disabled').addClass('status-selected').text('已选择');
+                        
+                        // 添加到选择消息
+                        if (hasSelection) {
+                            selectionMessage += ", ";
+                        }
+                        selectionMessage += `下拉框${index+1}: ${$this.find('option:selected').text()}`;
+                        hasSelection = true;
+                    } else {
+                        if ($this.prop('disabled')) {
+                            $row.removeClass('active').addClass('disabled');
+                            $indicator.removeClass('status-enabled status-selected').addClass('status-disabled').text('已禁用');
+                        } else {
+                            $row.removeClass('active disabled');
+                            $indicator.removeClass('status-disabled status-selected').addClass('status-enabled').text('可用');
+                        }
+                    }
+                });
+                
+                // 更新状态消息
+                const disabledSelects = $selects.filter(':disabled');
+                if (disabledSelects.length === 0) {
+                    statusMessage = "所有下拉框都可用，请开始选择。";
+                } else {
+                    statusMessage = "已禁用的下拉框: " + 
+                        disabledSelects.map(function() {
+                            return "下拉框 " + ($(this).index() + 1);
+                        }).get().join(", ");
+                }
+                
+                if (!hasSelection) {
+                    selectionMessage = "尚未选择任何选项。";
+                }
+                
+                $statusText.text(statusMessage);
+                $selectionText.text(selectionMessage);
+            }
+        });
+    </script>
+</body>
+</html>
+```
+
+## 功能说明
+
+这个实现添加了页面初始化时的检测功能：
+
+1. **初始化检测**：
+   - 页面加载时自动检测每个下拉框是否有选中的值
+   - 找到最后一个有值的下拉框
+   - 禁用该下拉框之前的所有下拉框
+   - 启用该下拉框之后的所有下拉框
+
+2. **初始化状态显示**：
+   - 添加了初始化状态区域，显示初始化检测的结果
+   - 提供初始化信息反馈
+
+3. **设置示例值功能**：
+   - 添加了"设置示例值"按钮，可以快速设置示例值并查看效果
+   - 方便测试初始化检测功能
+
+4. **完整的层级控制**：
+   - 保持原有的层级关系控制逻辑
+   - 当选择空值时，只恢复上一级下拉框的可用状态
+
+您可以直接复制上面的代码到HTML文件中运行，页面加载时会自动检测下拉框的状态并设置相应的禁用状态。
+
+
+
+
 # 层级联动下拉框禁用控制
 
 我理解了您的需求，您希望实现层级关系的下拉框控制，当某个下拉框选择空值时，只恢复上一级下拉框的可用状态，而不是全部恢复。
