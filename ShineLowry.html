@@ -1,3 +1,178 @@
+
+对象数组的去重需要根据特定属性来判断，我来给你详细介绍几种方法：
+
+## 1. 使用 Map（推荐，性能最好）
+
+```javascript
+let arr = [
+    {id: 1, name: 'Alice', age: 25},
+    {id: 2, name: 'Bob', age: 30},
+    {id: 1, name: 'Alice', age: 25}, // 完全重复
+    {id: 3, name: 'Charlie', age: 35},
+    {id: 2, name: 'Bob', age: 30} // 重复
+];
+
+// 根据 id 去重
+let uniqueArr = [...new Map(arr.map(item => [item.id, item])).values()];
+console.log(uniqueArr);
+// [{id: 1, name: 'Alice'}, {id: 2, name: 'Bob'}, {id: 3, name: 'Charlie'}]
+```
+
+## 2. 使用 filter + findIndex
+
+```javascript
+let arr = [
+    {id: 1, name: 'Alice'},
+    {id: 2, name: 'Bob'},
+    {id: 1, name: 'Alice'}, // 重复
+    {id: 3, name: 'Charlie'}
+];
+
+// 根据 id 去重
+let uniqueArr = arr.filter((item, index, self) => 
+    index === self.findIndex(t => t.id === item.id)
+);
+```
+
+## 3. 使用 reduce
+
+```javascript
+let arr = [
+    {id: 1, name: 'Alice'},
+    {id: 2, name: 'Bob'},
+    {id: 1, name: 'Alice'}, // 重复
+    {id: 3, name: 'Charlie'}
+];
+
+let uniqueArr = arr.reduce((acc, current) => {
+    if (!acc.find(item => item.id === current.id)) {
+        acc.push(current);
+    }
+    return acc;
+}, []);
+```
+
+## 4. 根据多个属性去重
+
+```javascript
+let arr = [
+    {id: 1, name: 'Alice', department: 'IT'},
+    {id: 2, name: 'Bob', department: 'HR'},
+    {id: 1, name: 'Alice', department: 'IT'}, // 重复
+    {id: 1, name: 'Alice', department: 'Finance'}, // 不重复（部门不同）
+    {id: 3, name: 'Charlie', department: 'IT'}
+];
+
+// 根据 id 和 name 去重
+let uniqueArr = arr.filter((item, index, self) => 
+    index === self.findIndex(t => 
+        t.id === item.id && t.name === item.name
+    )
+);
+
+// 或者使用 Map，组合key
+let uniqueArr = [...new Map(arr.map(item => 
+    [`${item.id}-${item.name}`, item])
+).values()];
+```
+
+## 5. 封装成通用工具函数
+
+```javascript
+function removeDuplicateObjects(array, keyOrKeys) {
+    if (Array.isArray(keyOrKeys)) {
+        // 多个key的情况
+        const seen = new Set();
+        return array.filter(item => {
+            const keyValue = keyOrKeys.map(k => item[k]).join('|');
+            if (seen.has(keyValue)) {
+                return false;
+            }
+            seen.add(keyValue);
+            return true;
+        });
+    } else if (typeof keyOrKeys === 'string') {
+        // 单个key的情况
+        return [...new Map(array.map(item => [item[keyOrKeys], item])).values()];
+    } else {
+        // 默认根据所有属性去重（JSON序列化）
+        const seen = new Set();
+        return array.filter(item => {
+            const jsonStr = JSON.stringify(item);
+            if (seen.has(jsonStr)) {
+                return false;
+            }
+            seen.add(jsonStr);
+            return true;
+        });
+    }
+}
+
+// 使用示例
+const arr = [
+    {id: 1, name: 'Alice'},
+    {id: 2, name: 'Bob'},
+    {id: 1, name: 'Alice'}, // 重复
+    {id: 3, name: 'Charlie'}
+];
+
+// 根据id去重
+const result1 = removeDuplicateObjects(arr, 'id');
+
+// 根据多个属性去重
+const result2 = removeDuplicateObjects(arr, ['id', 'name']);
+
+// 完全重复的对象去重
+const result3 = removeDuplicateObjects(arr);
+```
+
+## 6. 从源头防止重复（最佳实践）
+
+```javascript
+class UniqueArray {
+    constructor(key = 'id') {
+        this.array = [];
+        this.keySet = new Set();
+        this.key = key;
+    }
+    
+    push(item) {
+        const keyValue = item[this.key];
+        if (!this.keySet.has(keyValue)) {
+            this.keySet.add(keyValue);
+            this.array.push(item);
+            return true;
+        }
+        return false;
+    }
+    
+    pushMultiple(items) {
+        items.forEach(item => this.push(item));
+    }
+    
+    getArray() {
+        return this.array;
+    }
+}
+
+// 使用示例
+const uniqueArr = new UniqueArray('id');
+uniqueArr.push({id: 1, name: 'Alice'});
+uniqueArr.push({id: 2, name: 'Bob'});
+uniqueArr.push({id: 1, name: 'Alice'}); // 不会添加
+
+console.log(uniqueArr.getArray());
+```
+
+## 性能建议
+
+1. **Map 方法**：性能最好，推荐使用
+2. **Set + 序列化**：适合完全相同的对象去重
+3. **避免在循环中频繁去重**：最好在添加时控制
+
+你的对象数组具体是什么结构？我可以给出更精准的去重方案。
+
+
 以下是给美国客户的国庆放假通知模板，您可以根据需要调整内容：
 
 ---
