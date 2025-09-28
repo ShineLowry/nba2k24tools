@@ -1,4 +1,21 @@
 
+
+let arr = [
+    {id: 1, name: 'Alice', age: 25},
+    {id: 2, name: 'Bob', age: 30},
+    {id: 1, name: 'Alice', age: 25}, // id和name都重复
+    {id: 1, name: 'Alice2', age: 26}, // 只有id重复，name不同
+    {id: 3, name: 'Charlie', age: 35},
+    {id: 2, name: 'Bob2', age: 31} // 只有id重复，name不同
+];
+
+// 使用 name 和 id 组合作为key
+let uniqueArr = [...new Map(arr.map(item => 
+    [`${item.id}-${item.name}`, item]
+)).values()];
+
+console.log(uniqueArr);
+// 结果：保留所有id和name组合不同的对象
 对象数组的去重需要根据特定属性来判断，我来给你详细介绍几种方法：
 
 ## 1. 使用 Map（推荐，性能最好）
