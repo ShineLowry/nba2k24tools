@@ -1,5 +1,82 @@
 
+你说得对，我来重新写一个更严谨的版本：
 
+```javascript
+$(document).ready(function() {
+    // 检索按钮点击事件
+    $('#searchBtn').click(function(e) {
+        e.preventDefault(); // 阻止默认行为
+        
+        var filledInputs = 0;
+        
+        // 遍历四个输入框
+        $('input[type="text"]').each(function() {
+            if ($(this).val().trim() !== '') {
+                filledInputs++;
+            }
+        });
+        
+        // 检查填写情况
+        if (filledInputs === 0) {
+            alert('请至少填写一个搜索条件！');
+            return false;
+        } else if (filledInputs > 1) {
+            alert('错误：只能填写一个搜索条件！');
+            return false;
+        } else {
+            // 只有一个输入框被填写，执行检索
+            performSearch();
+        }
+    });
+    
+    // 执行检索的函数
+    function performSearch() {
+        // 这里写你的检索逻辑
+        console.log('执行检索操作');
+        
+        // 获取被填写的输入框的值
+        var searchValue = '';
+        $('input[type="text"]').each(function() {
+            if ($(this).val().trim() !== '') {
+                searchValue = $(this).val().trim();
+                return false; // 跳出each循环
+            }
+        });
+        
+        console.log('搜索值：', searchValue);
+        // 这里可以继续写你的搜索逻辑
+    }
+    
+    // 可选：实时验证，当用户输入时自动清空其他输入框
+    $('input[type="text"]').on('input', function() {
+        var currentInput = $(this);
+        var currentValue = currentInput.val().trim();
+        
+        if (currentValue !== '') {
+            // 清空其他输入框
+            $('input[type="text"]').not(currentInput).val('');
+        }
+    });
+});
+```
+
+对应的HTML结构：
+```html
+<input type="text" id="input1" placeholder="条件1">
+<input type="text" id="input2" placeholder="条件2">
+<input type="text" id="input3" placeholder="条件3">
+<input type="text" id="input4" placeholder="条件4">
+<button id="searchBtn">检索</button>
+```
+
+这个版本的特点：
+
+1. **使用选择器**：`$('input[type="text"]')` 选择所有文本输入框
+2. **实时互斥**：当用户在一个输入框输入时，自动清空其他输入框
+3. **精确统计**：准确计算被填写的输入框数量
+4. **错误处理**：分别处理0个、1个、多个输入框被填写的情况
+
+如果你不想要实时清空的功能，可以删除最后的那段 `input` 事件监听代码，只保留点击事件的验证逻辑。
 let arr = [
     {id: 1, name: 'Alice', age: 25},
     {id: 2, name: 'Bob', age: 30},
