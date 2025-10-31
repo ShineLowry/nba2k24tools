@@ -1,4 +1,46 @@
+function validateInput(input) {
+    // 条件1：必须为半角字母数字字符，ASCII代码：SP(0x20)-(0x7e)
+    const isHalfWidthAscii = (str) => {
+        for (let i = 0; i < str.length; i++) {
+            const charCode = str.charCodeAt(i);
+            if (charCode < 0x20 || charCode > 0x7e) {
+                return false;
+            }
+        }
+        return true;
+    };
+    
+    // 条件2：不得包含违禁字符，禁止字符 ~[]$¥
+    const hasForbiddenChars = (str) => {
+        const forbiddenChars = ['~', '[', ']', '$', '¥'];
+        return forbiddenChars.some(char => str.includes(char));
+    };
+    
+    // 条件3：必须介于0到26个字符之间
+    const isLengthValid = (str) => {
+        return str.length >= 0 && str.length <= 26;
+    };
+    
+    // 输入必须是字符串类型
+    if (typeof input !== 'string') {
+        return false;
+    }
+    
+    // 同时满足三个条件
+    return isHalfWidthAscii(input) && 
+           !hasForbiddenChars(input) && 
+           isLengthValid(input);
+}
 
+// 测试用例
+console.log(validateInput("Hello123")); // true - 符合所有条件
+console.log(validateInput("Test~String")); // false - 包含违禁字符 ~
+console.log(validateInput("Test[String]")); // false - 包含违禁字符 [ ]
+console.log(validateInput("Price$100")); // false - 包含违禁字符 $
+console.log(validateInput("Price¥100")); // false - 包含违禁字符 ¥
+console.log(validateInput("ThisStringIsWayTooLongForValidation")); // false - 超过26字符
+console.log(validateInput("")); // true - 空字符串在0-26范围内
+console.log(validateInput("Normal Text 123 !@#")); // true - 所有字符在ASCII 0x20-0x7e范围内
 你说得对，我来重新写一个更严谨的版本：
 
 ```javascript
