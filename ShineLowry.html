@@ -1,3 +1,33 @@
+
+function validateInput(input) {
+    if (typeof input !== 'string') return false;
+    
+    // 条件1+2：半角ASCII字符且不包含违禁字符
+    const charValid = /^[\x20-\x7e]*$/.test(input) && 
+                     !/[~\[\]$¥]/.test(input);
+    
+    // 条件3：长度0-26字符
+    const lengthValid = input.length >= 0 && input.length <= 26;
+    
+    return charValid && lengthValid;
+}
+
+// 测试
+const testCases = [
+    "Hello123", // true
+    "Test~String", // false
+    "Normal Text!", // true
+    "Short", // true
+    "", // true
+    "ThisStringIsExactly26Char!!", // true (26字符)
+    "ThisStringHasMoreThan26Chars" // false (27字符)
+];
+
+testCases.forEach(test => {
+    console.log(`"${test}" -> ${validateInput(test)}`);
+});
+
+
 function validateInput(input) {
     // 条件1：必须为半角字母数字字符，ASCII代码：SP(0x20)-(0x7e)
     const isHalfWidthAscii = (str) => {
