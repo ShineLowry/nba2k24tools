@@ -1,4 +1,38 @@
+好的，去掉所有string前缀，简化版本：
 
+```sql
+-- 情况一：直接匹配（有数据就报错）
+SELECT IMPR_UD_H10 
+FROM IMPR_UT_MESMO3_STOP_TYPE_REJECT
+WHERE IMPR_UD_OSA = @osa
+  AND IMPR_UD_CONSTANT = @constant
+  AND IMPR_UD_CUSTOMER_NAME = @customer_name
+  AND IMPR_UD_END_CUSTOMER_NAME = @end_customer_name
+  AND IMPR_UD_CUSTOMER_CODE = @customer_code
+  AND IMPR_UD_H10 = @h10
+
+-- 情况二：@NOT匹配（有数据就不报错，没数据就报错）  
+SELECT IMPR_UD_H10 
+FROM IMPR_UT_MESMO3_STOP_TYPE_REJECT
+WHERE IMPR_UD_OSA = @osa
+  AND IMPR_UD_CONSTANT = @constant
+  AND IMPR_UD_CUSTOMER_NAME = CONCAT('@NOT ', @customer_value)
+  AND IMPR_UD_END_CUSTOMER_NAME = CONCAT('@NOT ', @customer_value)
+  AND IMPR_UD_CUSTOMER_CODE = @customer_code
+  AND IMPR_UD_H10 = @h10
+```
+
+参数说明：
+
+· @osa = 'MEY'
+· @constant = 'BABOR 50'
+· @customer_name = 'SCENIFIERR'
+· @end_customer_name = 'SCENIFIERR'
+· @customer_code = 'KI050'
+· @h10 = 'COM-H'
+· @customer_value = 'SCENIFIERR'
+
+这样够简洁了吧！
 
 当然可以！这样更高效。你可以在循环之前先处理数据，创建一个只包含需要字段的新数组：
 
