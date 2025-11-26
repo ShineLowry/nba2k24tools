@@ -1,3 +1,25 @@
+SELECT 
+    IMPR_UD_H10,
+    CASE 
+        WHEN IMPR_UD_CUSTOMER_NAME = @customer_name 
+         AND IMPR_UD_END_CUSTOMER_NAME = @end_customer_name THEN '情况一'
+        WHEN IMPR_UD_CUSTOMER_NAME = CONCAT('@NOT ', @customer_value) 
+         AND IMPR_UD_END_CUSTOMER_NAME = CONCAT('@NOT ', @customer_value) THEN '情况二'
+        ELSE '其他'
+    END as case_type
+FROM IMPR_UT_MESMO3_STOP_TYPE_REJECT
+WHERE IMPR_UD_OSA = @osa
+  AND IMPR_UD_CONSTANT = @constant
+  AND IMPR_UD_CUSTOMER_CODE = @customer_code
+  AND IMPR_UD_H10 = @h10
+  AND (
+      (IMPR_UD_CUSTOMER_NAME = @customer_name AND IMPR_UD_END_CUSTOMER_NAME = @end_customer_name)
+      OR
+      (IMPR_UD_CUSTOMER_NAME = CONCAT('@NOT ', @customer_value) AND IMPR_UD_END_CUSTOMER_NAME = CONCAT('@NOT ', @customer_value))
+  )
+
+
+
 好的，去掉所有string前缀，简化版本：
 
 ```sql
