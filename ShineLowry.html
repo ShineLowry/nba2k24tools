@@ -1,3 +1,96 @@
+var customerName = $("#customerName").val();
+var endCustomerName = $("#endCustomerName").val();
+var invalidRows = []; // 统一使用一个数组来存储无效行号
+
+// 遍历表格中的每一行
+$('[name="tableDataList"] tr').each(function(index) {
+    var tr = $(this);
+    var murata_pn = tr.find("[name='murata_pn']").val();
+    
+    // 如果 murata_pn 为空，跳过该行
+    if (!murata_pn || murata_pn.trim() === '') {
+        console.log("Row " + (index + 1) + ": murata_pn 为空，跳过");
+        return true; // continue
+    }
+    
+    // 调用 API 获取数据
+    var param = {
+        murataPn: murata_pn
+    };
+    
+    console.log("Row " + (index + 1) + " param:", param);
+    
+    try {
+        var result = getCustCode(param);
+        console.log("Row " + (index + 1) + " result:", result);
+        
+        // 设置 h10_code 的值
+        var h10_code = result.h10_desc || '';
+        tr.find("[name='h10_code']").val(h10_code);
+        
+        // 如果有错误，记录无效行
+        if (result.error) {
+            console.log("Row " + (index + 1) + ": API 返回错误");
+            invalidRows.push(index + 1);
+            return true; // continue
+        }
+        
+        // 如果 h10_code 不为空，进行进一步验证
+        if (h10_code && h10_code.trim() !== '') {
+            var h10Parm = {
+                companyName: companyName,
+                customerName: customerName,
+                endCustomerName: endCustomerName,
+                osa: osa,
+                h10_desc: h10_code,
+                custCode: custCode
+            };
+            
+            console.log("Row " + (index + 1) + " h10Parm:", h10Parm);
+            
+            try {
+                var matchResult = mesmo3events.getClassH10(h10Parm);
+                console.log("Row " + (index + 1) + " matchResult:", matchResult);
+                
+                // 如果 matchCount > 0，记录为无效行
+                if (matchResult.matchCount && matchResult.matchCount > 0) {
+                    console.log("Row " + (index + 1) + ": matchCount > 0，标记为无效");
+                    invalidRows.push(index + 1);
+                }
+            } catch (apiError) {
+                console.error("Row " + (index + 1) + ": getClassH10 API 调用失败", apiError);
+                invalidRows.push(index + 1);
+            }
+        } else {
+            console.log("Row " + (index + 1) + ": h10_code 为空，跳过进一步验证");
+        }
+        
+    } catch (error) {
+        console.error("Row " + (index + 1) + ": getCustCode API 调用失败", error);
+        invalidRows.push(index + 1);
+    }
+});
+
+// 最后检查是否有无效行
+if (invalidRows.length > 0) {
+    console.error("以下行验证失败（行号从1开始）: " + invalidRows.join(", "));
+    
+    // 根据你的需求，可以选择以下方式之一：
+    // 1. 弹出警告框
+    alert("以下行存在问题，请检查:\n第 " + invalidRows.join(", ") + " 行");
+    
+    // 2. 抛出错误
+    // throw new Error("存在无效行: " + invalidRows.join(", "));
+    
+    // 3. 在页面上显示错误信息
+    // $("#errorMessage").text("以下行验证失败: " + invalidRows.join(", ")).show();
+} else {
+    console.log("所有行验证通过");
+    alert("所有行验证通过");
+}
+
+
+
 SELECT 
     IMPR_UD_H10,
     CASE 
