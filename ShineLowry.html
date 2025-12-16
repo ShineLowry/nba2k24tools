@@ -1,3 +1,95 @@
+$('#searchBtn').click(function(e) {
+    e.preventDefault();
+    
+    var cost_department_code = $("#cost_code").val().trim();
+    var rdms2_division_sv = $("#business_division").val().trim();
+    var rdms3_department = $("#department").val().trim();
+    var rdms4_section = $("#selection").val().trim();
+    
+    // 修正：JavaScript对象应该用 {} 而不是 []
+    var searchInfo = {
+        cost_department_code: '',
+        rdms2_division_sv: '',
+        rdms3_department: '',
+        rdms4_section: ''
+    };
+    
+    // 修正：if-else链逻辑，可能需要用独立的if而不是else if
+    if (cost_department_code) {
+        searchInfo.cost_department_code = cost_department_code;
+    }
+    if (rdms2_division_sv) {
+        searchInfo.rdms2_division_sv = rdms2_division_sv;
+    }
+    if (rdms3_department) {
+        searchInfo.rdms3_department = rdms3_department;
+    }
+    if (rdms4_section) {
+        searchInfo.rdms4_section = rdms4_section;
+    }
+    
+    // 发送AJAX请求
+    $.ajax({
+        type: "POST",
+        url: "murata/im/global/et0009_st13/getRecordDataForOther",
+        data: {
+            searchInfo: JSON.stringify(searchInfo)  // 使用标准JSON.stringify
+        },
+        success: function(res, textStatus, jqXHR) {
+            var searchData = res.data;
+            console.log("searchData", searchData);
+            
+            if (!searchData || searchData.length === 0) {
+                if (cost_department_code !== "") {
+                    imuShowErrorMessage('原値コードがマスタに存在しません', [], true, 0);
+                    return false;
+                } else if (rdms2_division_sv !== "") {
+                    imuShowErrorMessage('事業部・統括部がマスタに存在しません', [], true, 0);
+                    return false;
+                } else if (rdms3_department !== "") {
+                    imuShowErrorMessage('部がマスタに存在しません', [], true, 0);
+                    return false;
+                } else if (rdms4_section !== "") {
+                    imuShowErrorMessage('課がマスタに存在しません', [], true, 0);
+                    return false;
+                } else {
+                    imuShowErrorMessage('検索条件を入力してください', [], true, 0);
+                }
+                return false;
+            }
+            
+            // 如果找到数据，在这里处理数据
+            // 例如：显示数据到表格
+            processSearchData(searchData);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("AJAX error:", textStatus, errorThrown);
+            imuShowErrorMessage('検索中にエラーが発生しました', [], true, 0);
+        }
+    });
+});
+
+// 处理搜索结果的函数
+function processSearchData(data) {
+    // 这里添加处理数据的代码
+    // 例如：填充表格、显示结果等
+    console.log("处理数据:", data);
+    
+    // 示例：清空并填充表格
+    $('#resultTable tbody').empty();
+    $.each(data, function(index, item) {
+        var row = '<tr>' +
+            '<td>' + (item.cost_department_code || '') + '</td>' +
+            '<td>' + (item.rdms2_division_sv || '') + '</td>' +
+            '<td>' + (item.rdms3_department || '') + '</td>' +
+            '<td>' + (item.rdms4_section || '') + '</td>' +
+            '</tr>';
+        $('#resultTable tbody').append(row);
+    });
+}
+
+
+
 var customerName = $("#customerName").val();
 var endCustomerName = $("#endCustomerName").val();
 var invalidRows = []; // 统一使用一个数组来存储无效行号
