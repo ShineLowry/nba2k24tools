@@ -1,3 +1,26 @@
+$(document).ready(function() {
+    // 获取今天日期
+    const today = new Date();
+    
+    // 计算13天前的日期
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 13);
+    
+    // 格式化日期为 dd/mm/yyyy
+    function formatDate(date) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+    
+    // 设置日期值
+    $('#startDate').val(formatDate(startDate));
+    $('#endDate').val(formatDate(today));
+});
+
+
+
 $('#searchBtn').click(function(e) {
     e.preventDefault();
     
