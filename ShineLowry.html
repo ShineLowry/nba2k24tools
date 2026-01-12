@@ -1,3 +1,19 @@
+-- Oracle 版本
+SELECT 'All' AS LABEL, '' AS VALUE, 0 AS SORT_ORDER FROM DUAL
+UNION ALL
+SELECT DISTINCT  
+    INFR_UD_COMPANY_NAME AS LABEL,  
+    INFR_UD_COMPANY_NAME AS VALUE,
+    1 AS SORT_ORDER
+FROM  
+    INFR_UT_MESMOB_ST01_RF0
+WHERE 
+    INFR_UD_COMPANY_NAME IS NOT NULL
+ORDER BY 
+    SORT_ORDER, 
+    LABEL ASC;
+
+
 $(document).ready(function() {
     // 获取今天日期
     const today = new Date();
