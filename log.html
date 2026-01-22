@@ -1,3 +1,46 @@
+// 推荐使用这个函数 - 处理所有空值情况
+function getTableChanges(before, after) {
+    const changes = [];
+    
+    for (let i = 0; i < before.length; i++) {
+        const b = before[i];
+        const a = after[i];
+        
+        // A字段
+        if ((b.A || '') !== (a.A || '')) {
+            changes.push({No: b.id, field: 'A', oldvalue: b.A || '', newvalue: a.A || ''});
+        }
+        
+        // B字段
+        if ((b.B || '') !== (a.B || '')) {
+            changes.push({No: b.id, field: 'B', oldvalue: b.B || '', newvalue: a.B || ''});
+        }
+        
+        // C字段
+        if ((b.C || '') !== (a.C || '')) {
+            changes.push({No: b.id, field: 'C', oldvalue: b.C || '', newvalue: a.C || ''});
+        }
+        
+        // D字段
+        if ((b.D || '') !== (a.D || '')) {
+            changes.push({No: b.id, field: 'D', oldvalue: b.D || '', newvalue: a.D || ''});
+        }
+        
+        // E字段
+        if ((b.E || '') !== (a.E || '')) {
+            changes.push({No: b.id, field: 'E', oldvalue: b.E || '', newvalue: a.E || ''});
+        }
+    }
+    
+    return changes;
+}
+
+// 使用示例
+const changes = getTableChanges(initialData, currentData);
+// changes 就是你要的log列表
+
+
+
 // 核心对比函数 - 最简洁版本
 function compareAndGetChanges(originalData, currentData) {
     const changes = [];
