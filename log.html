@@ -1,3 +1,44 @@
+// 核心对比函数 - 最简洁版本
+function compareAndGetChanges(originalData, currentData) {
+    const changes = [];
+    
+    // 直接遍历每一行
+    for (let i = 0; i < originalData.length; i++) {
+        const originalRow = originalData[i];
+        const currentRow = currentData[i];
+        
+        // 对比每个字段
+        ['A', 'B', 'C', 'D', 'E'].forEach(field => {
+            if (originalRow[field] !== currentRow[field]) {
+                changes.push({
+                    No: originalRow.id,        // 行ID
+                    field: field,              // 字段名
+                    oldvalue: originalRow[field],
+                    newvalue: currentRow[field]
+                });
+            }
+        });
+    }
+    
+    return changes;
+}
+
+// 使用示例
+const originalData = [
+    {id: 1, A: "A1", B: "B1", C: "C1", D: "D1", E: "E1"},
+    {id: 2, A: "A2", B: "B2", C: "C2", D: "D2", E: "E2"}
+];
+
+const currentData = [
+    {id: 1, A: "A1修改", B: "B1", C: "C1", D: "D1", E: "E1"},
+    {id: 2, A: "A2", B: "B2修改", C: "C2", D: "D2", E: "E2修改"}
+];
+
+const changes = compareAndGetChanges(originalData, currentData);
+console.log(changes);
+
+
+
 function extractModifiedData(originalData, finalData) {
     const changes = [];
     
