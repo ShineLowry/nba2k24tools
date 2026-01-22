@@ -1,3 +1,50 @@
+function extractModifiedData(originalData, finalData) {
+    const changes = [];
+    
+    // 1. 基础验证
+    if (!originalData || !finalData) {
+        console.error('数据不能为空');
+        return changes;
+    }
+    
+    // 2. 确保行数一致（根据业务规则应该一致）
+    if (originalData.length !== finalData.length) {
+        console.warn('数据行数不一致，但继续处理');
+    }
+    
+    // 3. 逐行对比
+    const rowCount = Math.min(originalData.length, finalData.length);
+    
+    for (let i = 0; i < rowCount; i++) {
+        const originalRow = originalData[i];
+        const finalRow = finalData[i];
+        
+        // 4. 验证行ID（可选，但推荐）
+        if (originalRow.id !== finalRow.id) {
+            console.error(`第${i+1}行ID不匹配`);
+            continue;
+        }
+        
+        // 5. 对比每个字段
+        ['A', 'B', 'C', 'D', 'E'].forEach(field => {
+            const oldValue = String(originalRow[field] || '');
+            const newValue = String(finalRow[field] || '');
+            
+            if (oldValue !== newValue) {
+                changes.push({
+                    No: originalRow.id,
+                    field: field,
+                    oldvalue: oldValue,
+                    newvalue: newValue
+                });
+            }
+        });
+    }
+    
+    return changes;
+}
+
+
 function getModifiedFields(original, current) {
     const changes = [];
     
