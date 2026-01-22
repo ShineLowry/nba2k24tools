@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表格编辑日志系统</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .description {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        tr:hover td {
+            background-color: #f8f9fa;
+        }
+        
+        .editable {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .editable:hover {
+            background-color: #e9ecef !important;
+        }
+        
+        .editable.editing {
+            background-color: #fff3cd !important;
+        }
+        
+        .editable input {
+            width: 100%;
+            padding: 4px 8px;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .modified {
+            background-color: #ffeaa7 !important;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .output {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .output h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .json-output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .json-output.empty {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>表格编辑日志系统</h1>
+        <div class="description">
+            编辑表格中的数据，点击"获取修改记录"按钮，系统会生成包含No、field、oldvalue、newvalue的修改记录列表。
+        </div>
+        
+        <div id="statusMessage" class="status info">
+            点击表格单元格进行编辑
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>A</th>
+                    <th>B</th>
+                    <th>C</th>
+                    <th>D</th>
+                    <th>E</th>
+                </tr>
+            </thead>
+            <tbody id="dataTable">
+                <!-- 表格数据将通过JavaScript动态生成 -->
+            </tbody>
+        </table>
+        
+        <div class="button-group">
+            <button id="getChangesBtn" class="btn btn-success" disabled>获取修改记录</button>
+            <button id="resetBtn" class="btn">重置表格</button>
+        </div>
+        
+        <div class="output">
+            <h3>修改记录列表（可直接发送到后端插入数据库）</h3>
+            <div id="jsonOutput" class="json-output empty">
+                暂无修改记录
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 模拟从后台获取的初始数据，每行数据包含id和其他字段
+            // id对应数据库中的No字段
+            const initialData = [
+                { id: 101, A: "数据A1", B: "数据B1", C: "数据C1", D: "数据D1", E: "数据E1" },
+                { id: 102, A: "数据A2", B: "数据B2", C: "数据C2", D: "数据D2", E: "数据E2" },
+                { id: 103, A: "数据A3", B: "数据B3", C: "数据C3", D: "数据D3", E: "数据E3" },
+                { id: 104, A: "数据A4", B: "数据B4", C: "数据C4", D: "数据D4", E: "数据E4" },
+                { id: 105, A: "数据A5", B: "数据B5", C: "数据C5", D: "数据D5", E: "数据E5" }
+            ];
+            
+            // 存储原始数据用于比较
+            let originalData = JSON.parse(JSON.stringify(initialData));
+            
+            // 存储用户修改的记录
+            let changes = [];
+            
+            // 初始化表格
+            function initializeTable() {
+                const $tableBody = $('#dataTable');
+                $tableBody.empty();
+                
+                initialData.forEach((rowData, index) => {
+                    const $row = $('<tr></tr>').data('row-index', index);
+                    
+                    // No列（不可编辑）
+                    $row.append($('<td></td>').addClass('no-column').text(rowData.id));
+                    
+                    // 可编辑列
+                    ['A', 'B', 'C', 'D', 'E'].forEach(field => {
+                        const $cell = $('<td></td>')
+                            .addClass('editable')
+                            .attr('data-field', field)
+                            .attr('data-row-index', index)
+                            .text(rowData[field] || '');
+                        
+                        $row.append($cell);
+                    });
+                    
+                    $tableBody.append($row);
+                });
+                
+                // 重置原始数据
+                originalData = JSON.parse(JSON.stringify(initialData));
+                changes = [];
+                
+                // 更新UI状态
+                updateUI();
+            }
+            
+            // 更新UI状态
+            function updateUI() {
+                // 更新按钮状态
+                if (changes.length > 0) {
+                    $('#getChangesBtn').prop('disabled', false);
+                    $('#statusMessage')
+                        .removeClass('info success')
+                        .addClass('warning')
+                        .text(`有 ${changes.length} 处修改，点击"获取修改记录"按钮查看`)
+                        .show();
+                } else {
+                    $('#getChangesBtn').prop('disabled', true);
+                    $('#statusMessage')
+                        .removeClass('warning info')
+                        .addClass('success')
+                        .text('表格数据已是最新，没有检测到修改')
+                        .show();
+                }
+                
+                // 更新JSON输出
+                if (changes.length === 0) {
+                    $('#jsonOutput').html('暂无修改记录').addClass('empty');
+                }
+            }
+            
+            // 获取修改记录
+            function getChangeRecords() {
+                // 格式化修改记录，符合数据库log表结构
+                const changeRecords = changes.map(change => {
+                    const rowIndex = change.rowIndex;
+                    const rowData = initialData[rowIndex];
+                    
+                    return {
+                        No: rowData.id, // 使用数据库中的id作为No
+                        field: change.field,
+                        oldvalue: change.oldValue || '',
+                        newvalue: change.newValue || ''
+                    };
+                });
+                
+                return changeRecords;
+            }
+            
+            // 显示修改记录
+            function displayChangeRecords() {
+                const changeRecords = getChangeRecords();
+                
+                if (changeRecords.length === 0) {
+                    $('#jsonOutput').html('暂无修改记录').addClass('empty');
+                    return;
+                }
+                
+                // 格式化为JSON字符串，便于查看
+                const jsonStr = JSON.stringify(changeRecords, null, 2);
+                $('#jsonOutput').html(jsonStr).removeClass('empty');
+                
+                // 显示成功消息
+                $('#statusMessage')
+                    .removeClass('warning info')
+                    .addClass('success')
+                    .text(`已生成 ${changeRecords.length} 条修改记录`)
+                    .show();
+                    
+                // 在实际应用中，这里可以添加AJAX请求将数据发送到后端
+                console.log('修改记录列表：', changeRecords);
+                
+                // 演示：模拟发送到后端
+                setTimeout(() => {
+                    alert(`已生成 ${changeRecords.length} 条修改记录，请查看页面底部的JSON输出。\n\n在实际应用中，这些数据将通过AJAX发送到后端插入数据库。`);
+                }, 100);
+            }
+            
+            // 单元格点击事件 - 进入编辑模式
+            $(document).on('click', '.editable', function() {
+                const $cell = $(this);
+                
+                // 如果已经在编辑模式，则忽略
+                if ($cell.hasClass('editing')) return;
+                
+                const field = $cell.data('field');
+                const rowIndex = $cell.data('row-index');
+                const currentValue = $cell.text().trim();
+                
+                // 标记为编辑模式
+                $cell.addClass('editing');
+                
+                // 创建输入框
+                const $input = $('<input type="text">')
+                    .val(currentValue)
+                    .on('blur', function() {
+                        const newValue = $(this).val().trim();
+                        const oldValue = currentValue;
+                        
+                        // 移除编辑模式
+                        $cell.removeClass('editing');
+                        $cell.text(newValue);
+                        
+                        // 如果值已更改，记录修改
+                        if (newValue !== oldValue) {
+                            // 检查是否已记录此修改
+                            const existingChangeIndex = changes.findIndex(change => 
+                                change.rowIndex === rowIndex && change.field === field);
+                            
+                            if (existingChangeIndex >= 0) {
+                                // 更新现有修改
+                                changes[existingChangeIndex].newValue = newValue;
+                            } else {
+                                // 添加新修改
+                                changes.push({
+                                    rowIndex: rowIndex,
+                                    field: field,
+                                    oldValue: oldValue,
+                                    newValue: newValue
+                                });
+                            }
+                            
+                            // 标记单元格为已修改
+                            $cell.addClass('modified');
+                            
+                            // 更新UI状态
+                            updateUI();
+                        }
+                    })
+                    .on('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            $(this).blur();
+                        } else if (e.key === 'Escape') {
+                            $(this).val(currentValue).blur();
+                        }
+                    });
+                
+                // 清空单元格并添加输入框
+                $cell.empty().append($input);
+                $input.focus().select();
+            });
+            
+            // 获取修改记录按钮点击事件
+            $('#getChangesBtn').click(function() {
+                displayChangeRecords();
+            });
+            
+            // 重置表格按钮点击事件
+            $('#resetBtn').click(function() {
+                if (confirm('确定要重置表格吗？所有未保存的修改将丢失。')) {
+                    initializeTable();
+                    $('#statusMessage')
+                        .removeClass('warning success')
+                        .addClass('info')
+                        .text('表格已重置为初始状态')
+                        .show();
+                }
+            });
+            
+            // 初始化表格
+            initializeTable();
+            
+            // 显示初始状态消息
+            $('#statusMessage').show();
+        });
+    </script>
+</body>
+</html>
