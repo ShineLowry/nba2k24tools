@@ -1,3 +1,25 @@
+function getModifiedFields(original, current) {
+    const changes = [];
+    
+    // 假设行数不变，按索引对比
+    for (let i = 0; i < original.length; i++) {
+        ['A', 'B', 'C', 'D', 'E'].forEach(field => {
+            if (original[i][field] !== current[i][field]) {
+                changes.push({
+                    No: original[i].id,          // 行ID
+                    field: field,                // 字段名
+                    oldvalue: original[i][field], // 原始值
+                    newvalue: current[i][field]  // 新值
+                });
+            }
+        });
+    }
+    
+    return changes;
+}
+
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
