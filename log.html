@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>表格数据对比日志系统</title>
+    <title>表格数据对比工具</title>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <style>
         * {
@@ -15,7 +15,7 @@
         
         body {
             background-color: #f5f7fa;
-            padding: 20px;
+            padding: 30px;
         }
         
         .container {
@@ -24,629 +24,401 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 25px;
+            padding: 30px;
         }
         
         h1 {
             color: #333;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
         
-        .description {
-            color: #666;
-            text-align: center;
-            margin-bottom: 25px;
-            line-height: 1.6;
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fafafa;
         }
         
-        .highlight {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-            font-size: 14px;
-        }
-        
-        th {
-            background-color: #f8f9fa;
-            padding: 12px 10px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid #dee2e6;
-            position: sticky;
-            top: 0;
-        }
-        
-        td {
-            padding: 10px;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        tr:hover td {
-            background-color: #f8f9fa;
-        }
-        
-        .editable {
-            cursor: pointer;
-            position: relative;
-            transition: background-color 0.2s;
-        }
-        
-        .editable:hover {
-            background-color: #e3f2fd !important;
-        }
-        
-        .editable.editing {
-            background-color: #fff8e1 !important;
-        }
-        
-        .editable input {
-            width: 100%;
-            padding: 6px 8px;
-            border: 2px solid #2196f3;
-            border-radius: 4px;
-            font-size: 14px;
-            background-color: white;
-        }
-        
-        .modified {
-            background-color: #fff3cd !important;
-            position: relative;
-        }
-        
-        .modified::after {
-            content: "●";
-            color: #ff9800;
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            font-size: 10px;
-        }
-        
-        .btn {
-            padding: 10px 24px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            margin-right: 10px;
-            transition: all 0.3s;
-        }
-        
-        .btn:hover {
-            background-color: #0056b3;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .btn:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .btn-success {
-            background-color: #28a745;
-        }
-        
-        .btn-success:hover {
-            background-color: #1e7e34;
-        }
-        
-        .btn-secondary {
-            background-color: #6c757d;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #545b62;
-        }
-        
-        .status {
-            padding: 12px 15px;
-            margin: 15px 0;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .status.info {
-            background-color: #e3f2fd;
-            color: #0d47a1;
-            border-left: 4px solid #2196f3;
-        }
-        
-        .status.success {
-            background-color: #e8f5e9;
-            color: #1b5e20;
-            border-left: 4px solid #4caf50;
-        }
-        
-        .status.warning {
-            background-color: #fff3e0;
-            color: #e65100;
-            border-left: 4px solid #ff9800;
-        }
-        
-        .status-content {
-            flex-grow: 1;
-        }
-        
-        .status-badge {
-            background-color: #f8f9fa;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-        
-        .output-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #dee2e6;
-        }
-        
-        .output-section h3 {
-            color: #333;
+        .section-title {
+            color: #2196f3;
             margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 18px;
         }
         
-        .output-count {
-            background-color: #007bff;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .json-output {
+        .code-block {
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
             border-radius: 4px;
             padding: 15px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
-            max-height: 300px;
-            overflow-y: auto;
+            overflow-x: auto;
             white-space: pre-wrap;
-            word-break: break-all;
-        }
-        
-        .json-output.empty {
-            color: #6c757d;
-            font-style: italic;
-            text-align: center;
-            padding: 30px;
-        }
-        
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 25px;
-            margin-bottom: 20px;
-        }
-        
-        .data-summary {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            color: #666;
-            font-size: 13px;
-        }
-        
-        .summary-item {
-            padding: 5px 10px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-        
-        .comparison-info {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f0f7ff;
-            border-radius: 6px;
-            border-left: 4px solid #2196f3;
-        }
-        
-        .comparison-info h4 {
-            color: #0d47a1;
             margin-bottom: 10px;
         }
         
-        .comparison-info p {
-            color: #555;
-            line-height: 1.5;
-            margin-bottom: 8px;
+        .btn {
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            transition: background-color 0.3s;
         }
         
-        .no-column {
+        .btn:hover {
+            background-color: #1976d2;
+        }
+        
+        .btn-success {
+            background-color: #4caf50;
+        }
+        
+        .btn-success:hover {
+            background-color: #388e3c;
+        }
+        
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #4caf50;
+            border-radius: 6px;
+            background-color: #f1f8e9;
+        }
+        
+        .result-title {
+            color: #388e3c;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .info-box {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-title {
+            color: #1976d2;
+            margin-bottom: 10px;
             font-weight: bold;
-            color: #007bff;
+        }
+        
+        .comparison-summary {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>表格数据对比日志系统</h1>
-        <div class="description">
-            编辑表格中的数据，完成所有修改后点击<span class="highlight">"对比并生成日志"</span>按钮。<br>
-            系统会将当前表格数据与原始数据进行对比，自动生成修改日志列表。
+        <h1>表格数据对比和修改记录提取</h1>
+        
+        <div class="info-box">
+            <div class="info-title">核心逻辑说明</div>
+            <p>1. 初始化时获取表格数据，生成初始列表</p>
+            <p>2. 用户编辑完成后获取表格数据，生成最终列表</p>
+            <p>3. 对比两个列表，找出所有修改的字段</p>
+            <p>4. 提取修改记录，生成符合数据库log表结构的列表</p>
         </div>
         
-        <div id="statusMessage" class="status info">
-            <div class="status-content">点击表格单元格进行编辑，修改的单元格会高亮显示</div>
-            <div id="modifiedCount" class="status-badge">0处修改</div>
+        <div class="section">
+            <div class="section-title">步骤1：模拟数据（实际从表格获取）</div>
+            <p>假设的表格数据结构：每行包含id（No）和字段A-E</p>
+            <div class="code-block" id="initialDataDisplay">
+                // 初始数据列表
+            </div>
+            <div class="code-block" id="finalDataDisplay">
+                // 最终数据列表
+            </div>
+            <button class="btn" onclick="generateTestData()">生成测试数据</button>
         </div>
         
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>A</th>
-                    <th>B</th>
-                    <th>C</th>
-                    <th>D</th>
-                    <th>E</th>
-                </tr>
-            </thead>
-            <tbody id="dataTable">
-                <!-- 表格数据将通过JavaScript动态生成 -->
-            </tbody>
-        </table>
+        <div class="section">
+            <div class="section-title">步骤2：核心对比函数</div>
+            <p>这是最关键的部分：对比两个数据列表，提取修改记录</p>
+            <div class="code-block">
+/**
+ * 对比初始数据和最终数据，提取修改记录
+ * @param {Array} originalData - 初始数据列表
+ * @param {Array} finalData - 最终数据列表
+ * @returns {Array} 修改记录列表
+ */
+function compareAndExtractChanges(originalData, finalData) {
+    const changes = [];
+    
+    // 确保两个数组长度一致
+    const length = Math.min(originalData.length, finalData.length);
+    
+    for (let i = 0; i < length; i++) {
+        const originalRow = originalData[i];
+        const finalRow = finalData[i];
         
-        <div class="data-summary">
-            <div class="summary-item">总行数: <span id="totalRows">0</span></div>
-            <div class="summary-item">总列数: <span id="totalCols">6</span></div>
-            <div class="summary-item">可编辑字段: A, B, C, D, E</div>
+        // 确保对比的是同一行（根据id）
+        if (originalRow.id !== finalRow.id) {
+            console.warn(`第${i+1}行ID不匹配: ${originalRow.id} ≠ ${finalRow.id}`);
+            continue;
+        }
+        
+        // 对比每个字段
+        ['A', 'B', 'C', 'D', 'E'].forEach(field => {
+            const originalValue = originalRow[field] || '';
+            const finalValue = finalRow[field] || '';
+            
+            // 如果值不同，说明字段被修改了
+            if (originalValue !== finalValue) {
+                changes.push({
+                    No: originalRow.id,        // 行ID（数据库中的No）
+                    field: field,              // 字段名
+                    oldvalue: originalValue,   // 原始值
+                    newvalue: finalValue       // 新值
+                });
+            }
+        });
+    }
+    
+    return changes;
+}
+            </div>
         </div>
         
-        <div class="button-group">
-            <button id="compareBtn" class="btn btn-success" disabled>对比并生成日志</button>
-            <button id="resetBtn" class="btn btn-secondary">重置表格</button>
-            <button id="showOriginalBtn" class="btn">查看原始数据</button>
+        <div class="section">
+            <div class="section-title">步骤3：对比和提取</div>
+            <div class="comparison-summary">
+                <p>对比规则：</p>
+                <p>1. 按行对比，确保id一致</p>
+                <p>2. 对比每个字段（A-E）的值</p>
+                <p>3. 只记录值发生变化的字段</p>
+                <p>4. 生成符合log表结构的数据</p>
+            </div>
+            <button class="btn btn-success" onclick="runComparison()">执行对比</button>
         </div>
         
-        <div class="comparison-info">
-            <h4>对比原理说明</h4>
-            <p>1. 初始化时保存原始表格数据</p>
-            <p>2. 用户编辑完成后获取当前表格数据</p>
-            <p>3. 逐行逐字段对比原始数据与当前数据</p>
-            <p>4. 找出所有不同的字段，生成修改日志</p>
-            <p>5. 日志格式: {No: 行ID, field: 字段名, oldvalue: 原始值, newvalue: 新值}</p>
+        <div class="result-section" id="resultSection" style="display: none;">
+            <div class="result-title">对比结果</div>
+            <div class="code-block" id="resultDisplay">
+                // 对比结果将显示在这里
+            </div>
+            <div class="code-block" id="jsonOutput">
+                // JSON格式输出
+            </div>
         </div>
         
-        <div class="output-section">
-            <h3>
-                修改日志列表（对比结果）
-                <span id="logCount" class="output-count">0条记录</span>
-            </h3>
-            <div id="jsonOutput" class="json-output empty">
-                暂无修改日志
+        <div class="section">
+            <div class="section-title">实际应用示例</div>
+            <p>在实际项目中，你会这样使用：</p>
+            <div class="code-block">
+// 1. 页面加载时获取初始数据
+let originalData = getInitialDataFromBackend();  // 从后端API获取
+
+// 2. 用户编辑表格后获取最终数据
+function onSaveButtonClick() {
+    const finalData = getCurrentTableData();      // 从表格获取当前数据
+    
+    // 3. 对比并提取修改记录
+    const changeLogs = compareAndExtractChanges(originalData, finalData);
+    
+    // 4. 发送到后端保存到数据库
+    if (changeLogs.length > 0) {
+        saveChangeLogsToDatabase(changeLogs);
+    }
+}
+
+// 从表格获取数据的函数
+function getCurrentTableData() {
+    const currentData = [];
+    $('#dataTable tr').each(function() {
+        const $row = $(this);
+        const rowId = $row.data('id');  // 假设每行有data-id属性
+        
+        currentData.push({
+            id: rowId,
+            A: $row.find('.field-a').val(),
+            B: $row.find('.field-b').val(),
+            C: $row.find('.field-c').val(),
+            D: $row.find('.field-d').val(),
+            E: $row.find('.field-e').val()
+        });
+    });
+    return currentData;
+}
             </div>
         </div>
     </div>
 
     <script>
-        $(document).ready(function() {
-            // 从后台获取的初始数据（模拟）
-            const initialData = [
+        // 模拟的初始数据
+        let originalData = [];
+        let finalData = [];
+        
+        // 生成测试数据
+        function generateTestData() {
+            // 初始数据
+            originalData = [
                 { id: 101, A: "数据A1", B: "数据B1", C: "数据C1", D: "数据D1", E: "数据E1" },
                 { id: 102, A: "数据A2", B: "数据B2", C: "数据C2", D: "数据D2", E: "数据E2" },
-                { id: 103, A: "数据A3", B: "数据B3", C: "数据C3", D: "数据D3", E: "数据E3" },
-                { id: 104, A: "数据A4", B: "数据B4", C: "数据C4", D: "数据D4", E: "数据E4" },
-                { id: 105, A: "数据A5", B: "数据B5", C: "数据C5", D: "数据D5", E: "数据E5" }
+                { id: 103, A: "数据A3", B: "数据B3", C: "数据C3", D: "数据D3", E: "数据E3" }
             ];
             
-            // 保存原始数据（深拷贝）
-            let originalData = JSON.parse(JSON.stringify(initialData));
+            // 模拟用户修改后的数据（修改了部分内容）
+            finalData = [
+                { id: 101, A: "修改后的A1", B: "数据B1", C: "数据C1", D: "数据D1", E: "数据E1" }, // A字段修改
+                { id: 102, A: "数据A2", B: "数据B2", C: "新C2值", D: "数据D2", E: "数据E2" },     // C字段修改
+                { id: 103, A: "数据A3", B: "新B3数据", C: "数据C3", D: "修改的D3", E: "数据E3" } // B和D字段修改
+            ];
             
-            // 跟踪修改的单元格
-            let modifiedCells = new Set();
+            // 显示数据
+            $('#initialDataDisplay').text(JSON.stringify(originalData, null, 2));
+            $('#finalDataDisplay').text(JSON.stringify(finalData, null, 2));
+        }
+        
+        /**
+         * 核心函数：对比初始数据和最终数据，提取修改记录
+         * @param {Array} originalData - 初始数据列表
+         * @param {Array} finalData - 最终数据列表
+         * @returns {Array} 修改记录列表
+         */
+        function compareAndExtractChanges(originalData, finalData) {
+            const changes = [];
             
-            // 初始化表格
-            function initializeTable() {
-                const $tableBody = $('#dataTable');
-                $tableBody.empty();
-                
-                initialData.forEach((rowData, index) => {
-                    const $row = $('<tr></tr>').data('row-index', index);
-                    
-                    // No列（不可编辑，显示数据库ID）
-                    $row.append($('<td></td>').addClass('no-column').text(rowData.id));
-                    
-                    // 可编辑列
-                    ['A', 'B', 'C', 'D', 'E'].forEach(field => {
-                        const $cell = $('<td></td>')
-                            .addClass('editable')
-                            .attr('data-field', field)
-                            .attr('data-row-index', index)
-                            .text(rowData[field] || '');
-                        
-                        $row.append($cell);
-                    });
-                    
-                    $tableBody.append($row);
-                });
-                
-                // 重置状态
-                modifiedCells.clear();
-                updateUI();
-                
-                // 更新数据统计
-                $('#totalRows').text(initialData.length);
-            }
+            // 确保两个数组长度一致
+            const length = Math.min(originalData.length, finalData.length);
             
-            // 更新UI状态
-            function updateUI() {
-                const modifiedCount = modifiedCells.size;
+            for (let i = 0; i < length; i++) {
+                const originalRow = originalData[i];
+                const finalRow = finalData[i];
                 
-                // 更新状态栏
-                if (modifiedCount > 0) {
-                    $('#compareBtn').prop('disabled', false);
-                    $('#statusMessage').removeClass('info success').addClass('warning');
-                    $('#modifiedCount').text(`${modifiedCount}处修改`);
-                } else {
-                    $('#compareBtn').prop('disabled', true);
-                    $('#statusMessage').removeClass('warning info').addClass('success');
-                    $('#modifiedCount').text('0处修改');
+                // 确保对比的是同一行（根据id）
+                if (originalRow.id !== finalRow.id) {
+                    console.warn(`第${i+1}行ID不匹配: ${originalRow.id} ≠ ${finalRow.id}`);
+                    continue;
                 }
-            }
-            
-            // 获取当前表格数据
-            function getCurrentTableData() {
-                const currentData = [];
                 
-                $('#dataTable tr').each(function(rowIndex) {
-                    const $row = $(this);
-                    const rowId = initialData[rowIndex].id; // 获取对应的数据库ID
+                // 对比每个字段
+                ['A', 'B', 'C', 'D', 'E'].forEach(field => {
+                    const originalValue = originalRow[field] || '';
+                    const finalValue = finalRow[field] || '';
                     
-                    const rowData = {
-                        id: rowId,
-                        A: '',
-                        B: '',
-                        C: '',
-                        D: '',
-                        E: ''
-                    };
-                    
-                    // 获取每个字段的值
-                    ['A', 'B', 'C', 'D', 'E'].forEach((field, colIndex) => {
-                        const cellValue = $row.find(`td[data-field="${field}"]`).text().trim();
-                        rowData[field] = cellValue;
-                    });
-                    
-                    currentData.push(rowData);
+                    // 如果值不同，说明字段被修改了
+                    if (originalValue !== finalValue) {
+                        changes.push({
+                            No: originalRow.id,        // 行ID（数据库中的No）
+                            field: field,              // 字段名
+                            oldvalue: originalValue,   // 原始值
+                            newvalue: finalValue       // 新值
+                        });
+                    }
                 });
-                
-                return currentData;
             }
             
-            // 对比原始数据与当前数据，生成修改日志
-            function compareAndGenerateLogs() {
-                const currentData = getCurrentTableData();
-                const changeLogs = [];
+            return changes;
+        }
+        
+        /**
+         * 增强版对比函数（处理更多边界情况）
+         */
+        function compareAndExtractChangesEnhanced(originalData, finalData) {
+            const changes = [];
+            
+            // 创建id到行数据的映射，处理行顺序变化的情况
+            const originalMap = new Map();
+            originalData.forEach(row => originalMap.set(row.id, row));
+            
+            const finalMap = new Map();
+            finalData.forEach(row => finalMap.set(row.id, row));
+            
+            // 找出所有在finalData中存在的id（既处理修改，也处理新增）
+            const allIds = new Set([
+                ...originalData.map(row => row.id),
+                ...finalData.map(row => row.id)
+            ]);
+            
+            allIds.forEach(id => {
+                const originalRow = originalMap.get(id);
+                const finalRow = finalMap.get(id);
                 
-                // 确保两个数据数组长度一致
-                const length = Math.min(originalData.length, currentData.length);
-                
-                for (let i = 0; i < length; i++) {
-                    const originalRow = originalData[i];
-                    const currentRow = currentData[i];
-                    
-                    // 对比每个字段
+                // 如果只有finalData中有，说明是新增行（根据你的需求处理）
+                if (!originalRow && finalRow) {
+                    // 新增行逻辑，如果需要记录新增
+                    console.log(`新增行: id=${id}`);
+                }
+                // 如果只有originalData中有，说明是删除行（根据你的需求处理）
+                else if (originalRow && !finalRow) {
+                    // 删除行逻辑，如果需要记录删除
+                    console.log(`删除行: id=${id}`);
+                }
+                // 如果两边都有，对比字段
+                else if (originalRow && finalRow) {
                     ['A', 'B', 'C', 'D', 'E'].forEach(field => {
                         const originalValue = originalRow[field] || '';
-                        const currentValue = currentRow[field] || '';
+                        const finalValue = finalRow[field] || '';
                         
-                        // 如果值不同，记录到日志
-                        if (originalValue !== currentValue) {
-                            changeLogs.push({
-                                No: originalRow.id, // 使用数据库中的ID
+                        if (originalValue !== finalValue) {
+                            changes.push({
+                                No: id,
                                 field: field,
                                 oldvalue: originalValue,
-                                newvalue: currentValue
+                                newvalue: finalValue
                             });
                         }
                     });
                 }
-                
-                return changeLogs;
-            }
-            
-            // 显示修改日志
-            function displayChangeLogs() {
-                const changeLogs = compareAndGenerateLogs();
-                
-                // 更新日志数量显示
-                $('#logCount').text(`${changeLogs.length}条记录`);
-                
-                if (changeLogs.length === 0) {
-                    $('#jsonOutput').html('暂无修改日志').addClass('empty');
-                    $('#statusMessage')
-                        .removeClass('warning info')
-                        .addClass('success')
-                        .html('<div class="status-content">没有检测到任何修改</div>');
-                    return;
-                }
-                
-                // 格式化为JSON字符串
-                const jsonStr = JSON.stringify(changeLogs, null, 2);
-                $('#jsonOutput').html(jsonStr).removeClass('empty');
-                
-                // 显示成功消息
-                $('#statusMessage')
-                    .removeClass('warning info')
-                    .addClass('success')
-                    .html(`<div class="status-content">对比完成，发现 <strong>${changeLogs.length}</strong> 处修改</div>`);
-                
-                // 在实际应用中，这里可以添加AJAX请求将数据发送到后端
-                console.log('修改日志列表：', changeLogs);
-                
-                // 演示：显示详细信息
-                setTimeout(() => {
-                    const detail = changeLogs.map(log => 
-                        `第${log.No}行的${log.field}字段: "${log.oldvalue}" → "${log.newvalue}"`
-                    ).join('\n');
-                    
-                    alert(`发现 ${changeLogs.length} 处修改:\n\n${detail}\n\n详细JSON数据已显示在页面底部。`);
-                }, 100);
-                
-                // 返回日志数据，方便外部调用
-                return changeLogs;
-            }
-            
-            // 显示原始数据（用于调试）
-            function showOriginalData() {
-                const jsonStr = JSON.stringify(originalData, null, 2);
-                alert(`原始表格数据（共${originalData.length}行）:\n\n${jsonStr}`);
-            }
-            
-            // 单元格点击事件 - 进入编辑模式
-            $(document).on('click', '.editable', function() {
-                const $cell = $(this);
-                
-                // 如果已经在编辑模式，则忽略
-                if ($cell.hasClass('editing')) return;
-                
-                const field = $cell.data('field');
-                const rowIndex = $cell.data('row-index');
-                const currentValue = $cell.text().trim();
-                
-                // 标记为编辑模式
-                $cell.addClass('editing');
-                
-                // 创建输入框
-                const $input = $('<input type="text">')
-                    .val(currentValue)
-                    .on('blur', function() {
-                        const newValue = $(this).val().trim();
-                        
-                        // 移除编辑模式
-                        $cell.removeClass('editing');
-                        $cell.text(newValue);
-                        
-                        // 如果值已更改，标记为已修改
-                        if (newValue !== currentValue) {
-                            const cellKey = `${rowIndex}-${field}`;
-                            modifiedCells.add(cellKey);
-                            $cell.addClass('modified');
-                        } else {
-                            // 如果值改回原始值，移除修改标记
-                            const cellKey = `${rowIndex}-${field}`;
-                            if (modifiedCells.has(cellKey)) {
-                                modifiedCells.delete(cellKey);
-                                $cell.removeClass('modified');
-                            }
-                        }
-                        
-                        // 更新UI状态
-                        updateUI();
-                        
-                        // 清空已有的日志显示（因为数据已变更）
-                        $('#jsonOutput').html('数据已变更，请重新点击"对比并生成日志"按钮').addClass('empty');
-                        $('#logCount').text('0条记录');
-                    })
-                    .on('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            $(this).blur();
-                        } else if (e.key === 'Escape') {
-                            $(this).val(currentValue).blur();
-                        }
-                    });
-                
-                // 清空单元格并添加输入框
-                $cell.empty().append($input);
-                $input.focus().select();
             });
             
-            // 对比并生成日志按钮点击事件
-            $('#compareBtn').click(function() {
-                const logs = displayChangeLogs();
-                
-                // 可选：将日志数据发送到后端
-                // sendLogsToBackend(logs);
-            });
-            
-            // 重置表格按钮点击事件
-            $('#resetBtn').click(function() {
-                if (modifiedCells.size > 0) {
-                    if (confirm(`确定要重置表格吗？将丢失 ${modifiedCells.size} 处修改。`)) {
-                        // 重新从原始数据初始化
-                        initializeTable();
-                        $('#statusMessage')
-                            .removeClass('warning success')
-                            .addClass('info')
-                            .html('<div class="status-content">表格已重置为原始状态</div>');
-                    }
-                } else {
-                    initializeTable();
-                }
-            });
-            
-            // 查看原始数据按钮点击事件
-            $('#showOriginalBtn').click(function() {
-                showOriginalData();
-            });
-            
-            // 初始化表格
-            initializeTable();
-            
-            // 添加一个示例：自动修改一个单元格，演示功能
-            setTimeout(() => {
-                // 修改第2行第1列作为示例
-                const $exampleCell = $('#dataTable tr').eq(1).find('td[data-field="A"]');
-                $exampleCell.text('修改后的A2').addClass('modified');
-                modifiedCells.add('1-A');
-                updateUI();
-                
-                $('#statusMessage')
-                    .removeClass('info success')
-                    .addClass('warning')
-                    .html('<div class="status-content">已添加一个示例修改，您可以继续编辑或点击"对比并生成日志"按钮</div>');
-            }, 1000);
-        });
+            return changes;
+        }
         
-        // 示例函数：发送日志到后端
-        function sendLogsToBackend(logs) {
-            if (logs.length === 0) {
-                alert('没有修改记录需要保存');
+        // 执行对比
+        function runComparison() {
+            if (originalData.length === 0) {
+                alert('请先生成测试数据');
                 return;
             }
             
-            $.ajax({
-                url: '/api/save-change-logs',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ 
-                    changeLogs: logs,
-                    timestamp: new Date().toISOString()
-                }),
-                success: function(response) {
-                    alert(`成功保存 ${logs.length} 条修改记录到数据库`);
-                    // 可以在这里重置修改标记
-                },
-                error: function(error) {
-                    alert('保存失败：' + (error.responseText || error.statusText));
-                }
-            });
+            // 使用核心函数进行对比
+            const changes = compareAndExtractChanges(originalData, finalData);
+            
+            // 显示结果
+            $('#resultSection').show();
+            
+            if (changes.length === 0) {
+                $('#resultDisplay').text('没有发现修改记录');
+                $('#jsonOutput').text('[]');
+            } else {
+                // 格式化显示
+                let resultText = `发现 ${changes.length} 处修改:\n\n`;
+                changes.forEach((change, index) => {
+                    resultText += `${index + 1}. 第${change.No}行的${change.field}字段\n`;
+                    resultText += `   旧值: "${change.oldvalue}"\n`;
+                    resultText += `   新值: "${change.newvalue}"\n\n`;
+                });
+                
+                $('#resultDisplay').text(resultText);
+                $('#jsonOutput').text(JSON.stringify(changes, null, 2));
+            }
+            
+            // 输出到控制台
+            console.log('修改记录:', changes);
         }
+        
+        // 页面加载时生成示例数据
+        $(document).ready(function() {
+            generateTestData();
+        });
     </script>
 </body>
 </html>
