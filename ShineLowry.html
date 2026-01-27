@@ -1,3 +1,20 @@
+let firstValue = null;
+let hasCapturedFirstValue = false;
+
+// 监听表格中字段A的输入事件
+$(document).on('input', 'table [data-field="A"]', function() {
+    if (!hasCapturedFirstValue && $(this).val().trim() !== '') {
+        firstValue = $(this).val().trim();
+        hasCapturedFirstValue = true;
+        console.log('第一个有值的输入:', firstValue);
+        
+        // 可选：移除事件监听器
+        // $(document).off('input', 'table [data-field="A"]');
+    }
+});
+
+
+
 -- Oracle 版本
 SELECT 'All' AS LABEL, '' AS VALUE, 0 AS SORT_ORDER FROM DUAL
 UNION ALL
