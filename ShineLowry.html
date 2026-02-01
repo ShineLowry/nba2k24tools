@@ -1,3 +1,31 @@
+// 假设你的数据是这样的
+const dataArray = [
+  { id: 1, date: "13/11/2025 06:45", otherField: "value1" },
+  { id: 2, date: "13/11/2025 14:30", otherField: "value2" },
+  { id: 3, date: "13/11/2025 11:15", otherField: "value3" },
+  { id: 4, date: "13/11/2025 20:00", otherField: "value4" }
+];
+
+// 方法1：直接处理时间字符串
+const formattedArray1 = dataArray.map(item => {
+  const dateTimeStr = item.date;
+  const [datePart, timePart] = dateTimeStr.split(' ');
+  const [hours, minutes] = timePart.split(':');
+  const hour = parseInt(hours, 10);
+  
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour % 12 || 12; // 0点显示为12
+  
+  return {
+    ...item,
+    dateWithAMPM: `${datePart} ${displayHour}:${minutes} ${ampm}`
+  };
+});
+
+console.log(formattedArray1);
+// 输出包含新字段 dateWithAMPM 的对象数组
+
+
 let firstValue = null;
 let hasCapturedFirstValue = false;
 
