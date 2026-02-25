@@ -1,3 +1,29 @@
+-- 方法1：使用EXISTS（最直观，遇到第一条就返回，性能最好）
+SELECT 
+    (SELECT CASE WHEN EXISTS(SELECT 1 FROM table_b WHERE field1 = :val1) THEN 1 ELSE 0 END FROM DUAL) as field1_exists,
+    (SELECT CASE WHEN EXISTS(SELECT 1 FROM table_b WHERE field2 = :val2) THEN 1 ELSE 0 END FROM DUAL) as field2_exists,
+    (SELECT CASE WHEN EXISTS(SELECT 1 FROM table_b WHERE field3 = :val3) THEN 1 ELSE 0 END FROM DUAL) as field3_exists,
+    (SELECT CASE WHEN EXISTS(SELECT 1 FROM table_b WHERE field4 = :val4) THEN 1 ELSE 0 END FROM DUAL) as field4_exists
+FROM DUAL;
+
+-- 方法2：使用ROWNUM限制（查到一条就停）
+SELECT 
+    (SELECT 1 FROM table_b WHERE field1 = :val1 AND ROWNUM = 1) as field1_exists,
+    (SELECT 1 FROM table_b WHERE field2 = :val2 AND ROWNUM = 1) as field2_exists,
+    (SELECT 1 FROM table_b WHERE field3 = :val3 AND ROWNUM = 1) as field3_exists,
+    (SELECT 1 FROM table_b WHERE field4 = :val4 AND ROWNUM = 1) as field4_exists
+FROM DUAL;
+
+-- 方法3：使用COUNT(*)，但不管重复几条，>0就表示存在
+SELECT 
+    NVL(MIN(CASE WHEN field1 = :val1 THEN 1 END), 0) as field1_exists,
+    NVL(MIN(CASE WHEN field2 = :val2 THEN 1 END), 0) as field2_exists,
+    NVL(MIN(CASE WHEN field3 = :val3 THEN 1 END), 0) as field3_exists,
+    NVL(MIN(CASE WHEN field4 = :val4 THEN 1 END), 0) as field4_exists
+FROM table_b 
+WHERE field1 = :val1 OR field2 = :val2 OR field3 = :val3 OR field4 = :val4;
+
+
 -- 一次查询，返回四个字段的存在状态
 SELECT 
     MAX(CASE WHEN field1 = ? THEN 1 ELSE 0 END) as field1_exists,
