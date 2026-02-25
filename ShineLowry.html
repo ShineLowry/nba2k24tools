@@ -1,3 +1,14 @@
+-- 一次查询，返回四个字段的存在状态
+SELECT 
+    MAX(CASE WHEN field1 = ? THEN 1 ELSE 0 END) as field1_exists,
+    MAX(CASE WHEN field2 = ? THEN 1 ELSE 0 END) as field2_exists,
+    MAX(CASE WHEN field3 = ? THEN 1 ELSE 0 END) as field3_exists,
+    MAX(CASE WHEN field4 = ? THEN 1 ELSE 0 END) as field4_exists
+FROM table_b 
+WHERE field1 = ? OR field2 = ? OR field3 = ? OR field4 = ?;
+
+
+
 以下是根据您组长的指示，整理成正式商务邮件回复的日语版本，供您参考：
 
 ---
