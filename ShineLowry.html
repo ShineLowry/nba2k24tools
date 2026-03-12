@@ -1,3 +1,10 @@
+Certainly. Here's the English translation:
+
+---
+
+Since the email was sent after the user clicked the update button, it's no longer possible to resend it. I was wondering if I could manually send a follow-up email to CC instead. However, I'm concerned that it might not be appropriate for me to contact CC directly. May I ask if it would be possible to forward the original email to you, and could you kindly add some explanation before sending it to CC? I'm truly sorry for the inconvenience and for troubling you with this.
+
+
 -- 方法1：使用EXISTS（最直观，遇到第一条就返回，性能最好）
 SELECT 
     (SELECT CASE WHEN EXISTS(SELECT 1 FROM table_b WHERE field1 = :val1) THEN 1 ELSE 0 END FROM DUAL) as field1_exists,
